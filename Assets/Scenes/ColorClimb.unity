@@ -4777,7 +4777,7 @@ MonoBehaviour:
   moveSpeed: 5
   jumpForce: 11
   groundProbeOffset: 0.02
-  groundProbeRadius: 0.1
+  groundProbeRadius: 0.4
   enableCoyote: 1
   coyoteTime: 0.1
   enableJumpBuffer: 1
