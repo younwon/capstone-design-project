@@ -15,7 +15,7 @@ public class PlayerController2D : MonoBehaviour
     [Tooltip("발 아래로 살짝 내린 거리")]
     public float groundProbeOffset = 0.02f;
     [Tooltip("발끝 원형 검출 반경")]
-    public float groundProbeRadius = 0.1f;   // 캡슐 사용시 0.1 정도 권장
+    public float groundProbeRadius = 0.4f;   // 캡슐 사용시 0.1 정도 권장
 
     [Header("Jump Assist")]
     public bool enableCoyote = true;
