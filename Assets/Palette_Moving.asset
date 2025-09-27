@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
+  m_Name: Palette_Moving
+  m_EditorClassIdentifier: 
+  prefabGreen: {fileID: 4035714313487784480, guid: f0f4ae398c116874682172a2545efc8d, type: 3}
+  prefabYellow: {fileID: 4035714313487784480, guid: f7c1a648ff0e18a47af8213b8ff538ca, type: 3}
+  prefabBlue: {fileID: 4035714313487784480, guid: b4c56a60cdc3bd0468522abd49505137, type: 3}
+  prefabOrange: {fileID: 4035714313487784480, guid: 02f7ee79f451b21438b6b0de87f0fcea, type: 3}
