@@ -51,58 +51,53 @@ public class SettingsUIController : MonoBehaviour
     // 음소거 전 단계 저장(복원용)
     int prevBgmStep, prevSfxStep;
 
+    // ---------------- Lifecycle ----------------
     void Start()
     {
-        float savedBgm = PlayerPrefs.GetFloat(KEY_BGM, 0.8f);
-        float savedSfx = PlayerPrefs.GetFloat(KEY_SFX, 0.8f);
-        initBgmStep = Mathf.RoundToInt(savedBgm * MAX_STEP);
-        initSfxStep = Mathf.RoundToInt(savedSfx * MAX_STEP);
-        curBgmStep = initBgmStep;
-        curSfxStep = initSfxStep;
-
-        prevBgmStep = curBgmStep;
-        prevSfxStep = curSfxStep;
-
-        initMuteAll = PlayerPrefs.GetInt(KEY_MUTEALL, 0) == 1;
-        initVibration = PlayerPrefs.GetInt(KEY_VIB, 1) == 1;
-        curMuteAll = initMuteAll;
-        curVibration = initVibration;
-
-        UpdateBgmUI(false);
-        UpdateSfxUI(false);
-        if (toggleAllSound) toggleAllSound.SetIsOnWithoutNotify(curMuteAll);
-        if (toggleVibration) toggleVibration.SetIsOnWithoutNotify(curVibration);
-        ApplyMuteAllVisual(curMuteAll);
-
-        // 행 버튼
+        // 리스너만 연결 (값 로드는 OnEnable에서 처리)
         btnBgmMinus.onClick.AddListener(() => ChangeBgm(-1));
         btnBgmPlus.onClick.AddListener(() => ChangeBgm(+1));
         btnSfxMinus.onClick.AddListener(() => ChangeSfx(-1));
         btnSfxPlus.onClick.AddListener(() => ChangeSfx(+1));
 
-        // 하단 버튼
-        btnCancel.onClick.AddListener(OnCancel); // 되돌리기(창은 그대로)
-        btnSave.onClick.AddListener(OnSave);   // 저장만
+        btnCancel.onClick.AddListener(OnCancel);
+        btnSave.onClick.AddListener(OnSave);
 
-        // 체크박스
         if (toggleAllSound) toggleAllSound.onValueChanged.AddListener(OnToggleAllSound);
         if (toggleVibration) toggleVibration.onValueChanged.AddListener(OnToggleVibration);
 
-        // 닫기(X) & 팝업
         if (btnCloseX) btnCloseX.onClick.AddListener(TryClose);
         if (btnPopupDiscard) btnPopupDiscard.onClick.AddListener(ExitWithoutSave);
         if (btnPopupSaveAndExit) btnPopupSaveAndExit.onClick.AddListener(SaveAndExit);
 
-        if (popupUnsaved) popupUnsaved.SetActive(false); // 초기엔 숨김
+        if (popupUnsaved) popupUnsaved.SetActive(false);
     }
 
-    // ----- BGM / SFX -----
+    void OnEnable()
+    {
+        // 창을 열 때마다 항상 저장된 값으로 초기화
+        LoadFromPrefsToInit();
+        CopyInitToCurrent();
+
+        // 음소거 복원 대비
+        prevBgmStep = curBgmStep;
+        prevSfxStep = curSfxStep;
+
+        RefreshAllUI();
+        ApplyPreviewVolumesFromCurrent();
+    }
+
+    // ---------------- BGM / SFX ----------------
     void ChangeBgm(int delta)
     {
         int before = curBgmStep;
         curBgmStep = Mathf.Clamp(curBgmStep + delta, 0, MAX_STEP);
         dirtyBgm = (curBgmStep != initBgmStep);
-        if (curBgmStep != before) UpdateBgmUI(true);
+        if (curBgmStep != before)
+        {
+            UpdateBgmUI(true);
+            if (!curMuteAll && AudioManager.I) AudioManager.I.SetBgm(curBgmStep / (float)MAX_STEP);
+        }
     }
 
     void ChangeSfx(int delta)
@@ -110,22 +105,26 @@ public class SettingsUIController : MonoBehaviour
         int before = curSfxStep;
         curSfxStep = Mathf.Clamp(curSfxStep + delta, 0, MAX_STEP);
         dirtySfx = (curSfxStep != initSfxStep);
-        if (curSfxStep != before) UpdateSfxUI(true);
+        if (curSfxStep != before)
+        {
+            UpdateSfxUI(true);
+            if (!curMuteAll && AudioManager.I) AudioManager.I.SetSfx(curSfxStep / (float)MAX_STEP);
+        }
     }
 
     void UpdateBgmUI(bool animate)
     {
-        txtBgmValue.text = curBgmStep.ToString();
+        if (txtBgmValue) txtBgmValue.text = curBgmStep.ToString();
         if (bgBgmValueBox) bgBgmValueBox.sprite = dirtyBgm ? pendingSprite : normalSprite;
     }
 
     void UpdateSfxUI(bool animate)
     {
-        txtSfxValue.text = curSfxStep.ToString();
+        if (txtSfxValue) txtSfxValue.text = curSfxStep.ToString();
         if (bgSfxValueBox) bgSfxValueBox.sprite = dirtySfx ? pendingSprite : normalSprite;
     }
 
-    // ----- ALL MUTE -----
+    // ---------------- ALL MUTE ----------------
     void OnToggleAllSound(bool on)
     {
         curMuteAll = on;
@@ -141,8 +140,11 @@ public class SettingsUIController : MonoBehaviour
             UpdateBgmUI(false);
             UpdateSfxUI(false);
 
-            AudioManager.I.SetBgm(0f);
-            AudioManager.I.SetSfx(0f);
+            if (AudioManager.I)
+            {
+                AudioManager.I.SetBgm(0f);
+                AudioManager.I.SetSfx(0f);
+            }
         }
         else
         {
@@ -153,8 +155,11 @@ public class SettingsUIController : MonoBehaviour
             UpdateBgmUI(false);
             UpdateSfxUI(false);
 
-            AudioManager.I.SetBgm(curBgmStep / (float)MAX_STEP);
-            AudioManager.I.SetSfx(curSfxStep / (float)MAX_STEP);
+            if (AudioManager.I)
+            {
+                AudioManager.I.SetBgm(curBgmStep / (float)MAX_STEP);
+                AudioManager.I.SetSfx(curSfxStep / (float)MAX_STEP);
+            }
         }
 
         ApplyMuteAllVisual(curMuteAll);
@@ -162,26 +167,29 @@ public class SettingsUIController : MonoBehaviour
 
     void ApplyMuteAllVisual(bool muted)
     {
-        btnBgmMinus.interactable = !muted;
-        btnBgmPlus.interactable = !muted;
-        btnSfxMinus.interactable = !muted;
-        btnSfxPlus.interactable = !muted;
+        if (btnBgmMinus) btnBgmMinus.interactable = !muted;
+        if (btnBgmPlus) btnBgmPlus.interactable = !muted;
+        if (btnSfxMinus) btnSfxMinus.interactable = !muted;
+        if (btnSfxPlus) btnSfxPlus.interactable = !muted;
     }
 
-    // ----- VIBRATION -----
+    // ---------------- VIBRATION ----------------
     void OnToggleVibration(bool on)
     {
         curVibration = on;
         dirtyVibration = (curVibration != initVibration);
     }
 
-    // ----- SAVE / CANCEL (창은 닫지 않음) -----
+    // ---------------- SAVE / CANCEL ----------------
     void OnSave()
     {
         if (curMuteAll)
         {
-            AudioManager.I.SetBgm(0f);
-            AudioManager.I.SetSfx(0f);
+            if (AudioManager.I)
+            {
+                AudioManager.I.SetBgm(0f);
+                AudioManager.I.SetSfx(0f);
+            }
             PlayerPrefs.SetInt(KEY_MUTEALL, 1);
             PlayerPrefs.SetFloat(KEY_BGM, 0f);
             PlayerPrefs.SetFloat(KEY_SFX, 0f);
@@ -190,14 +198,20 @@ public class SettingsUIController : MonoBehaviour
         {
             float bgm = curBgmStep / (float)MAX_STEP;
             float sfx = curSfxStep / (float)MAX_STEP;
-            AudioManager.I.SetBgm(bgm);
-            AudioManager.I.SetSfx(sfx);
+
+            if (AudioManager.I)
+            {
+                AudioManager.I.SetBgm(bgm);
+                AudioManager.I.SetSfx(sfx);
+            }
             PlayerPrefs.SetInt(KEY_MUTEALL, 0);
             PlayerPrefs.SetFloat(KEY_BGM, bgm);
             PlayerPrefs.SetFloat(KEY_SFX, sfx);
         }
 
         PlayerPrefs.SetInt(KEY_VIB, curVibration ? 1 : 0);
+        PlayerPrefs.Save();
+
 #if UNITY_ANDROID || UNITY_IOS
         if (curVibration) Handheld.Vibrate();
 #endif
@@ -215,48 +229,40 @@ public class SettingsUIController : MonoBehaviour
 
     void OnCancel() // 저장 전 상태로 되돌리기(창은 유지)
     {
-        curBgmStep = initBgmStep; dirtyBgm = false;
-        curSfxStep = initSfxStep; dirtySfx = false;
-        curMuteAll = initMuteAll; dirtyMuteAll = false;
-        curVibration = initVibration; dirtyVibration = false;
-
+        CopyInitToCurrent();
         if (toggleAllSound) toggleAllSound.SetIsOnWithoutNotify(curMuteAll);
         if (toggleVibration) toggleVibration.SetIsOnWithoutNotify(curVibration);
 
-        UpdateBgmUI(false);
-        UpdateSfxUI(false);
-        ApplyMuteAllVisual(curMuteAll);
+        RefreshAllUI();
+        ApplyPreviewVolumesFromCurrent();
     }
 
-    // ----- 닫기/팝업 -----
+    // ---------------- 닫기/팝업 ----------------
     void TryClose()  // X 버튼에서 호출
     {
         if (HasDirty()) OpenPopup();
         else CloseSettings();
     }
 
-    bool HasDirty()
-    {
-        return dirtyBgm || dirtySfx || dirtyMuteAll || dirtyVibration;
-    }
+    bool HasDirty() => dirtyBgm || dirtySfx || dirtyMuteAll || dirtyVibration;
 
-    void OpenPopup()
-    {
-        if (popupUnsaved) popupUnsaved.SetActive(true);
-    }
-
-    void ClosePopup()
-    {
-        if (popupUnsaved) popupUnsaved.SetActive(false);
-    }
+    void OpenPopup() { if (popupUnsaved) popupUnsaved.SetActive(true); }
+    void ClosePopup() { if (popupUnsaved) popupUnsaved.SetActive(false); }
 
     void ExitWithoutSave() // 팝업: 저장 안 하고 닫기
     {
+        // 편집값을 원래(init)로 롤백 + 미리듣기도 원복
+        CopyInitToCurrent();
+        if (toggleAllSound) toggleAllSound.SetIsOnWithoutNotify(curMuteAll);
+        if (toggleVibration) toggleVibration.SetIsOnWithoutNotify(curVibration);
+        RefreshAllUI();
+        ApplyPreviewVolumesFromCurrent();
+
         ClosePopup();
         CloseSettings();
     }
 
-    void SaveAndExit()     // 팝업: 저장하고 닫기
+    void SaveAndExit() // 팝업: 저장하고 닫기
     {
         OnSave();
         ClosePopup();
@@ -265,8 +271,50 @@ public class SettingsUIController : MonoBehaviour
 
     void CloseSettings()
     {
-        if (settingsPanel) settingsPanel.SetActive(false); // PauseWhenOpen이 timeScale 복원해줄 것
+        if (settingsPanel) settingsPanel.SetActive(false);
+    }
+
+    // ---------------- Helpers ----------------
+    void LoadFromPrefsToInit()
+    {
+        float savedBgm = PlayerPrefs.GetFloat(KEY_BGM, 0.8f);
+        float savedSfx = PlayerPrefs.GetFloat(KEY_SFX, 0.8f);
+        initBgmStep = Mathf.Clamp(Mathf.RoundToInt(savedBgm * MAX_STEP), 0, MAX_STEP);
+        initSfxStep = Mathf.Clamp(Mathf.RoundToInt(savedSfx * MAX_STEP), 0, MAX_STEP);
+
+        initMuteAll = PlayerPrefs.GetInt(KEY_MUTEALL, 0) == 1;
+        initVibration = PlayerPrefs.GetInt(KEY_VIB, 1) == 1;
+    }
+
+    void CopyInitToCurrent()
+    {
+        curBgmStep = initBgmStep;
+        curSfxStep = initSfxStep;
+        curMuteAll = initMuteAll;
+        curVibration = initVibration;
+
+        dirtyBgm = dirtySfx = dirtyMuteAll = dirtyVibration = false;
+    }
+
+    void ApplyPreviewVolumesFromCurrent()
+    {
+        float bgm = curMuteAll ? 0f : (curBgmStep / (float)MAX_STEP);
+        float sfx = curMuteAll ? 0f : (curSfxStep / (float)MAX_STEP);
+        if (AudioManager.I)
+        {
+            AudioManager.I.SetBgm(bgm);
+            AudioManager.I.SetSfx(sfx);
+        }
+        ApplyMuteAllVisual(curMuteAll);
+    }
+
+    void RefreshAllUI()
+    {
+        UpdateBgmUI(false);
+        UpdateSfxUI(false);
+        if (toggleAllSound) toggleAllSound.SetIsOnWithoutNotify(curMuteAll);
+        if (toggleVibration) toggleVibration.SetIsOnWithoutNotify(curVibration);
+        ApplyMuteAllVisual(curMuteAll);
     }
 }
-
 
