@@ -51,15 +51,12 @@ public class PauseController : MonoBehaviour
 
     void Awake()
     {
-        // ScoreSystem 자동 할당(비어 있으면 싱글턴 사용)
         if (!score) score = ScoreSystem.I;
 
-        // 초기 비활성
         if (pausePanel) pausePanel.SetActive(false);
         if (popupRestart) popupRestart.SetActive(false);
         if (popupHome) popupHome.SetActive(false);
 
-        // 버튼 리스너
         if (btnResume) btnResume.onClick.AddListener(ClosePause);
         if (btnSettings) btnSettings.onClick.AddListener(OpenSettingsFromPause);
         if (btnPauseIcon) btnPauseIcon.onClick.AddListener(TogglePause);
@@ -75,6 +72,9 @@ public class PauseController : MonoBehaviour
 
     void Update()
     {
+        // ★ GameOverUI가 입력을 잠갔으면 ESC 무시
+        if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
             TogglePause();
     }
@@ -82,15 +82,19 @@ public class PauseController : MonoBehaviour
     // ---------- Pause Toggle ----------
     public void TogglePause()
     {
+        // ★ 게임오버 중엔 토글 자체를 막기
+        if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
+
         if (isPaused) ClosePause();
         else OpenPause();
     }
 
     public void OpenPause()
     {
+        // ★ 가드 한 번 더
+        if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
         if (isPaused) return;
 
-        // (중요) 정지 걸기 전에 최신 수치 스냅샷 → UI 업데이트
         RefreshStatsFromScore();
 
         prevTimeScale = Time.timeScale;
@@ -105,7 +109,6 @@ public class PauseController : MonoBehaviour
     {
         if (!isPaused) return;
 
-        // 열린 UI/팝업 정리
         if (popupRestart && popupRestart.activeSelf) popupRestart.SetActive(false);
         if (popupHome && popupHome.activeSelf) popupHome.SetActive(false);
         if (settingsPanel && settingsPanel.activeSelf) settingsPanel.SetActive(false);
@@ -138,9 +141,8 @@ public class PauseController : MonoBehaviour
     // ---------- Confirm Actions ----------
     void ConfirmRestart()
     {
-        onRestartConfirmed?.Invoke(); // 필요하면 여기서 score.ResetRun()도 호출 가능
+        onRestartConfirmed?.Invoke();
 
-        // 같은 씬 구조여도 리로드가 깔끔(모든 상태 초기화)
         string scene = SceneManager.GetActiveScene().name;
         Time.timeScale = 1f;
         SceneManager.LoadScene(scene);
@@ -148,7 +150,7 @@ public class PauseController : MonoBehaviour
 
     void ConfirmHome()
     {
-        onHomeConfirmed?.Invoke(); // B 방식이면 여기서 GameManager.ResetToTitle 등 연결
+        onHomeConfirmed?.Invoke();
 
         Time.timeScale = 1f;
 
@@ -160,7 +162,7 @@ public class PauseController : MonoBehaviour
             if (popupHome && popupHome.activeSelf) popupHome.SetActive(false);
             if (popupRestart && popupRestart.activeSelf) popupRestart.SetActive(false);
 
-            titlePanel.SetActive(true);              // 타이틀 UI 열기
+            titlePanel.SetActive(true);
             if (btnPauseIcon) btnPauseIcon.gameObject.SetActive(true);
             isPaused = false;
             return;
@@ -181,7 +183,6 @@ public class PauseController : MonoBehaviour
     // ---------- Stats UI ----------
     public void RefreshStatsFromScore()
     {
-        // score가 없거나 아직 초기화 전이면 0으로 표시
         int cur = (score != null) ? score.CurrentScore : 0;
         int run = (score != null) ? score.SessionMaxScore : 0;
         int best = (score != null) ? score.BestEverScore : 0;
