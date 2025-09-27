@@ -7,6 +7,7 @@ public class LavaRiser : MonoBehaviour
 {
     public Transform cam;
     public GridManager grid;
+    public bool lavaStarted = false;
 
     [Header("Renderers (children)")]
     public SpriteRenderer bodySR;   // Lava/Body의 SR (Tiled)
@@ -63,6 +64,10 @@ public class LavaRiser : MonoBehaviour
 
     void Update()
     {
+        if (!lavaStarted) return; // 신호 전에는 상승 안 함
+
+        ResizeAndLayout();
+
         if (!cam) cam = Camera.main ? Camera.main.transform : null;
         if (!cam) return;
 
@@ -141,6 +146,11 @@ public class LavaRiser : MonoBehaviour
         var rb = other.attachedRigidbody;
         if (rb && rb.velocity.y < bounceUpVelocity)
             rb.velocity = new Vector2(rb.velocity.x, bounceUpVelocity);
+    }
+    public void StartLava()
+    {
+        lavaStarted = true;
+        startTime = Time.time;
     }
 }
 

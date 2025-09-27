@@ -7,6 +7,8 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class PlayerController2D : MonoBehaviour
 {
+    public LavaRiser lavaRiser;
+
     [Header("Movement")]
     public float moveSpeed = 5f;
     public float jumpForce = 12f;
@@ -46,6 +48,9 @@ public class PlayerController2D : MonoBehaviour
 
     void Update()
     {
+        if (lavaRiser != null)
+            lavaRiser.StartLava();
+
         float inputX = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(inputX * moveSpeed, rb.velocity.y);
 
