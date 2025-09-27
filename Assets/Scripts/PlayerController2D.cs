@@ -48,8 +48,12 @@ public class PlayerController2D : MonoBehaviour
 
     void Update()
     {
-        if (lavaRiser != null)
-            lavaRiser.StartLava();
+        if (PlayerStartedMoving())
+        {
+            // LavaRiser 시작
+            if (lavaRiser != null)
+                lavaRiser.StartLava();
+        }
 
         float inputX = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(inputX * moveSpeed, rb.velocity.y);
