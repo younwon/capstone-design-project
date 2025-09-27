@@ -9,6 +9,16 @@ public class PlayerController2D : MonoBehaviour
 {
     public LavaRiser lavaRiser;
 
+    // 처음 움직였는지 추적
+    bool _hasStarted = false;
+
+    // 민감도(수평 입력 감지 임계값)
+    [SerializeField] float startInputThreshold = 0.01f;
+
+    // (선택) 다른 스크립트와 공유할 이벤트가 필요하면 주석 해제
+    // public static System.Action OnPlayerStartedMoving;
+
+
     [Header("Movement")]
     public float moveSpeed = 5f;
     public float jumpForce = 12f;
@@ -126,6 +136,30 @@ public class PlayerController2D : MonoBehaviour
             isGrounded = false;
         }
     }
+
+    // 플레이어가 "처음" 움직였는지 한 번만 true를 반환
+    bool PlayerStartedMoving()
+    {
+        if (_hasStarted) return false;
+
+        // 수평 입력(좌/우) 또는 점프 키를 시작 신호로 본다
+        float x = Input.GetAxisRaw("Horizontal");
+        bool jumpPressed = Input.GetButtonDown("Jump");
+
+        bool started =
+            Mathf.Abs(x) > startInputThreshold      // 좌/우 입력
+            || jumpPressed                          // 점프
+            || Mathf.Abs(rb.velocity.x) > 0.01f;    // 이미 움직이고 있는 경우(패드/외력 보정)
+
+        if (started)
+        {
+            _hasStarted = true;
+            // 필요하면 이벤트 발행
+            // OnPlayerStartedMoving?.Invoke();
+        }
+        return started;
+    }
+
 
 #if UNITY_EDITOR
     void OnDrawGizmosSelected()
