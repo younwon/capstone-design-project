@@ -4,16 +4,18 @@ using UnityEngine;
 [System.Serializable]
 public struct LaneRowFine
 {
-    public int lane;         // 0 ~ lanes-1 (시각 배치용)
-    public int rowOffset;    // 1,2,3… (세그먼트 내부 행)
-    public float yFine;      // 셀 크기 기준 미세 보정 (예: -0.5f)
-    public int colorGroup;   // 같은 그룹끼리 동일색 강제(>0일 때)
+    public int lane;
+    public int rowOffset;
+    public float yFine;
+    public int colorGroup;
+    public int paletteIndex; // 이 숫자에 해당하는 팔레트를 사용합니다.
 }
 
 public class SegmentPatternBuilder : MonoBehaviour
 {
-    [Header("Palette (필수)")]
-    public PlatformPalette palette;
+    // 업그레이드된 부분: 팔레트를 여러 개 등록할 수 있는 리스트로 변경합니다.
+    [Header("Palettes (여기에 여러 종류의 팔레트를 등록)")]
+    public List<PlatformPalette> palettes = new List<PlatformPalette>();
 
     [Header("패턴 포인트들")]
     public LaneRowFine[] points = new LaneRowFine[] {
@@ -88,7 +90,12 @@ public class SegmentPatternBuilder : MonoBehaviour
 
     public int BuildAtBaseRow(int baseRow, ref ColorRuleState state)
     {
-        if (!palette || points == null || points.Length == 0) return baseRow;
+        // [수정] 단일 palette 변수 대신 palettes 리스트를 확인합니다.
+        if (palettes == null || palettes.Count == 0 || points == null || points.Length == 0)
+        {
+            Debug.LogWarning("[SegmentPatternBuilder] Palettes 리스트가 비어있습니다.", gameObject);
+            return baseRow;
+        }
 
         if (clearOldChildrenOnBuild)
         {
@@ -108,23 +115,19 @@ public class SegmentPatternBuilder : MonoBehaviour
 
         for (int i = 0; i < points.Length; i++)
         {
-            // 시각 배치용 lane(halfCellBias 적용) + 오프셋
             int visLane = Mathf.Clamp(points[i].lane + laneOffset, 0, lanes - 1);
             int row = baseRow + Mathf.Max(0, points[i].rowOffset);
             float yFineWorld = points[i].yFine * cellSize;
             int group = points[i].colorGroup;
 
-            // 월드 좌표(보이는 위치)
             float x = GetLaneCenter(visLane, halfCellBias);
             float y = row * cellSize + yFineWorld;
             Vector2 wpos = new Vector2(x, y);
 
-            // ▲ 규칙 판정에 사용할 "논리 레인" 인덱스 계산 (logicHalfBias 사용)
             int logicLane = GetLogicLaneIndexFromX(x);
 
             BlockColor pick;
 
-            // 1) 그룹 고정색 우선
             if (forceSameColorInGroup && group > 0 && _groupColor.TryGetValue(group, out var fixedColor))
             {
                 pick = fixedColor;
@@ -132,8 +135,6 @@ public class SegmentPatternBuilder : MonoBehaviour
             else
             {
                 var banned = new HashSet<BlockColor>();
-
-                // (A) 같은 '논리 레인'에서 너무 가까운 행이면 금지 (머리 박기)
                 if (state.hasLaneHistory[logicLane])
                 {
                     int d = Mathf.Abs(row - state.lastRowPerLane[logicLane]);
@@ -141,20 +142,14 @@ public class SegmentPatternBuilder : MonoBehaviour
                     if (d <= needGap)
                         banned.Add(state.lastColorPerLane[logicLane]);
                 }
-
-                // (B) 전역 3연속 금지
                 if (globalMaxStreak > 0 && state.hasGlobal && state.globalStreak >= globalMaxStreak)
                     banned.Add(state.globalColor);
-
-                // (C) 구형 그룹 유니크(보통 사용 안 함)
                 if (useColorGroupUnique && group > 0)
                 {
                     for (int k = 0; k < spawned.Count; k++)
                         if (spawned[k].group == group)
                             banned.Add(spawned[k].color);
                 }
-
-                // (D) 근접 금지
                 if (useProximityBan)
                 {
                     float dxTh = Mathf.Abs(minWorldDXForSameColor * cellSize);
@@ -167,8 +162,11 @@ public class SegmentPatternBuilder : MonoBehaviour
                     }
                 }
 
-                // 후보 색 선택
-                var all = palette.AllColors;
+                // [수정] 후보 색상을 고를 때, 현재 포인트의 팔레트를 기준으로 합니다.
+                int paletteIdx = points[i].paletteIndex;
+                if (paletteIdx < 0 || paletteIdx >= palettes.Count) paletteIdx = 0; // 안전장치
+                var all = palettes[paletteIdx].AllColors;
+
                 var candidates = new List<BlockColor>(all.Count);
                 foreach (var c in all) if (!banned.Contains(c)) candidates.Add(c);
                 pick = (candidates.Count == 0)
@@ -179,15 +177,22 @@ public class SegmentPatternBuilder : MonoBehaviour
                     _groupColor[group] = pick;
             }
 
-            // 생성(시각 위치로 배치)
-            var prefab = palette.GetPrefab(pick);
+            // [수정] Point에 지정된 paletteIndex를 사용해 올바른 팔레트를 선택합니다.
+            int index = points[i].paletteIndex;
+            if (index < 0 || index >= palettes.Count)
+            {
+                Debug.LogWarning($"잘못된 Palette Index({index})가 감지되어 0번 팔레트를 사용합니다.", gameObject);
+                index = 0; // 잘못된 값이면 0번 팔레트로 대체
+            }
+            PlatformPalette paletteToUse = palettes[index];
+            var prefab = paletteToUse.GetPrefab(pick);
+
             if (prefab)
             {
                 var go = Instantiate(prefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
                 go.name = $"Plat_{pick}_#{i}";
             }
 
-            // 상태 갱신은 반드시 "논리 레인" 기준
             state.hasLaneHistory[logicLane] = true;
             state.lastRowPerLane[logicLane] = row;
             state.lastColorPerLane[logicLane] = pick;

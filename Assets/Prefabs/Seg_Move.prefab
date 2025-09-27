@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1834732117358071206
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 983742282967439279}
+  - component: {fileID: 4983894939096113908}
+  m_Layer: 0
+  m_Name: Seg_Move
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &983742282967439279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834732117358071206}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.06445703, y: 10.32123, z: 0.026529849}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4983894939096113908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834732117358071206}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 077c42c32a0ea4d48bd399f6cafc8930, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  palettes:
+  - {fileID: 11400000, guid: ea8e87659cdd3bb4ab8b30072316fc60, type: 2}
+  - {fileID: 11400000, guid: cd24bced6c9db8d4783154468c2188b2, type: 2}
+  points:
+  - lane: 1
+    rowOffset: 1
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+  - lane: 2
+    rowOffset: 2
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 1
+  - lane: 7
+    rowOffset: 3
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+  - lane: 2
+    rowOffset: 4
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 1
+  sameLaneExtraGap: 0
+  laneOffset: 0
+  minRowGapForSameColor: 2
+  globalMaxStreak: 2
+  clearOldChildrenOnBuild: 1
+  halfCellBias: 0
+  useLogicLaneIndex: 1
+  logicHalfBias: 0
+  minWorldDXForSameColor: 0.6
+  minWorldDYForSameColor: 1.1
+  useProximityBan: 1
+  forceSameColorInGroup: 1
+  useColorGroupUnique: 0
+  groupOverridesOtherBans: 1
