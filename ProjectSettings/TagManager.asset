@@ -3,10 +3,7 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags:
-  - Ground
-  - Block
-  - Wall
+  tags: []
   layers:
   - Default
   - TransparentFX
@@ -14,9 +11,9 @@ TagManager:
   - 
   - Water
   - UI
-  - Player
-  - FallingBlock
-  - SolidBlock
+  - 
+  - 
+  - 
   - 
   - 
   - 
@@ -43,28 +40,4 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: BackgroundFar
-    uniqueID: 3030540437
-    locked: 0
-  - name: BackgroundMid
-    uniqueID: 661028639
-    locked: 0
-  - name: BackgroundNear
-    uniqueID: 3147639999
-    locked: 0
-  - name: Blocks
-    uniqueID: 1302472757
-    locked: 0
-  - name: Hazards
-    uniqueID: 3464133919
-    locked: 0
-  - name: Player
-    uniqueID: 320860559
-    locked: 0
-  - name: Effects
-    uniqueID: 554210001
-    locked: 0
-  - name: UI
-    uniqueID: 3878298609
     locked: 0
