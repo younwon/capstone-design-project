@@ -18,6 +18,7 @@ public class CountDown : MonoBehaviour
     {
         // 카운트다운 시작 전이라도 베스트 기록 표시
         UpdateBestRecordUI();
+        timerText.color = Color.white;
     }
     void Update()
     {
@@ -32,6 +33,11 @@ public class CountDown : MonoBehaviour
         if (countdownEnded) return;
         timeRemaining -= Time.deltaTime;
         timerText.text = timeRemaining.ToString("F2");
+
+        if(timeRemaining < 10)
+        {
+            timerText.color = Color.red;
+        }
 
         if (timeRemaining <= 0)
         {
