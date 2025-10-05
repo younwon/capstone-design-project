@@ -25,7 +25,7 @@ public class PlatformColorable : MonoBehaviour
         col.isTrigger = false; // 밟히는 발판이므로 트리거 금지
     }
 
-    // ✅ Start에서 구독: 매니저가 준비된 뒤에 구독/적용
+    // Start에서 구독: 매니저가 준비된 뒤에 구독/적용
     void Start()
     {
         SubscribeAndApply();

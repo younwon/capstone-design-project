@@ -8,12 +8,11 @@ public struct LaneRowFine
     public int rowOffset;
     public float yFine;
     public int colorGroup;
-    public int paletteIndex; // 이 숫자에 해당하는 팔레트를 사용합니다.
+    public int paletteIndex;
 }
 
 public class SegmentPatternBuilder : MonoBehaviour
 {
-    // 업그레이드된 부분: 팔레트를 여러 개 등록할 수 있는 리스트로 변경합니다.
     [Header("Palettes (여기에 여러 종류의 팔레트를 등록)")]
     public List<PlatformPalette> palettes = new List<PlatformPalette>();
 
@@ -30,39 +29,30 @@ public class SegmentPatternBuilder : MonoBehaviour
     [Header("Same-lane Extra Gap")]
     [Tooltip("같은 레인에서 이 행 차이 이내면 같은 색 금지(세그먼트 경계까지 더 강하게 막기용)")]
     public int sameLaneExtraGap = 0;
-
     [Header("Lane Offset (전체 이동)")]
     public int laneOffset = 0;
-
     [Header("색 규칙(기존)")]
-    public int minRowGapForSameColor = 2; // 같은 레인, 이 행차 이내면 금지
-    public int globalMaxStreak = 2;       // 같은 색 연속 최대 허용(2면 3연속 금지)
-
+    public int minRowGapForSameColor = 2;
+    public int globalMaxStreak = 2;
     [Header("빌드 옵션")]
     public bool clearOldChildrenOnBuild = true;
-
     [Header("시각 레인 중앙 보정 (셀 단위)")]
     [Tooltip("이 값으로 ‘보이는 위치’를 미세 보정 (프리팹마다 달라도 됨)")]
-    public float halfCellBias = 0f;       // 예: Basic=-0.5, A=0
-
-    // ▼ 규칙판단(논리 레인)용 – 모든 프리팹이 ‘같은 기준’을 쓰도록 고정
+    public float halfCellBias = 0f;
     [Header("논리 레인 옵션")]
     [Tooltip("규칙 판정(머리박기/연속색 등)에 논리 레인(공통 바이어스)을 사용")]
     public bool useLogicLaneIndex = true;
     [Tooltip("논리 레인의 중앙 보정(셀 단위). 보통 0을 권장(전 프리팹 공통)")]
-    public float logicHalfBias = 0f;      // 권장 0
-
+    public float logicHalfBias = 0f;
     [Header("추가 금지 규칙(겹침 방지)")]
-    public float minWorldDXForSameColor = 0.6f; // 셀단위
-    public float minWorldDYForSameColor = 1.1f; // 셀단위
+    public float minWorldDXForSameColor = 0.6f;
+    public float minWorldDYForSameColor = 1.1f;
     public bool useProximityBan = true;
-
     [Header("그룹 강제 규칙")]
     public bool forceSameColorInGroup = true;
-    public bool useColorGroupUnique = false;   // 구형(보통 꺼두기)
+    public bool useColorGroupUnique = false;
     public bool groupOverridesOtherBans = true;
 
-    // Grid
     float cellSize = 1f;
     int lanes = 8;
     float originX = 0f;
@@ -90,7 +80,6 @@ public class SegmentPatternBuilder : MonoBehaviour
 
     public int BuildAtBaseRow(int baseRow, ref ColorRuleState state)
     {
-        // [수정] 단일 palette 변수 대신 palettes 리스트를 확인합니다.
         if (palettes == null || palettes.Count == 0 || points == null || points.Length == 0)
         {
             Debug.LogWarning("[SegmentPatternBuilder] Palettes 리스트가 비어있습니다.", gameObject);
@@ -110,7 +99,6 @@ public class SegmentPatternBuilder : MonoBehaviour
 
         spawned.Clear();
         _groupColor.Clear();
-
         int maxRow = baseRow;
 
         for (int i = 0; i < points.Length; i++)
@@ -119,13 +107,10 @@ public class SegmentPatternBuilder : MonoBehaviour
             int row = baseRow + Mathf.Max(0, points[i].rowOffset);
             float yFineWorld = points[i].yFine * cellSize;
             int group = points[i].colorGroup;
-
             float x = GetLaneCenter(visLane, halfCellBias);
             float y = row * cellSize + yFineWorld;
             Vector2 wpos = new Vector2(x, y);
-
             int logicLane = GetLogicLaneIndexFromX(x);
-
             BlockColor pick;
 
             if (forceSameColorInGroup && group > 0 && _groupColor.TryGetValue(group, out var fixedColor))
@@ -162,9 +147,8 @@ public class SegmentPatternBuilder : MonoBehaviour
                     }
                 }
 
-                // [수정] 후보 색상을 고를 때, 현재 포인트의 팔레트를 기준으로 합니다.
                 int paletteIdx = points[i].paletteIndex;
-                if (paletteIdx < 0 || paletteIdx >= palettes.Count) paletteIdx = 0; // 안전장치
+                if (paletteIdx < 0 || paletteIdx >= palettes.Count) paletteIdx = 0;
                 var all = palettes[paletteIdx].AllColors;
 
                 var candidates = new List<BlockColor>(all.Count);
@@ -177,14 +161,20 @@ public class SegmentPatternBuilder : MonoBehaviour
                     _groupColor[group] = pick;
             }
 
-            // [수정] Point에 지정된 paletteIndex를 사용해 올바른 팔레트를 선택합니다.
             int index = points[i].paletteIndex;
             if (index < 0 || index >= palettes.Count)
             {
                 Debug.LogWarning($"잘못된 Palette Index({index})가 감지되어 0번 팔레트를 사용합니다.", gameObject);
-                index = 0; // 잘못된 값이면 0번 팔레트로 대체
+                index = 0;
             }
             PlatformPalette paletteToUse = palettes[index];
+
+            // [수정] 여기서 확률적으로 가시 팔레트로 바꿔치기할지 결정합니다.
+            if (paletteToUse.spikeVersionPalette != null && Random.Range(0, 100) < paletteToUse.spikeChance)
+            {
+                paletteToUse = paletteToUse.spikeVersionPalette; // 팔레트를 가시 버전으로 교체!
+            }
+
             var prefab = paletteToUse.GetPrefab(pick);
 
             if (prefab)
@@ -216,7 +206,6 @@ public class SegmentPatternBuilder : MonoBehaviour
         return maxRow;
     }
 
-    // 보이는 위치 계산 (프리팹별 halfCellBias 사용)
     float GetLaneCenter(int lane, float halfBias)
     {
         float left = originX - (lanes * cellSize) * 0.5f;
@@ -224,7 +213,6 @@ public class SegmentPatternBuilder : MonoBehaviour
         return left + (lane + 0.5f) * cellSize + bias;
     }
 
-    // 월드 X로부터 “논리 레인 인덱스”를 계산 (logicHalfBias 사용, 모든 프리팹 공통 기준)
     int GetLogicLaneIndexFromX(float worldX)
     {
         if (!useLogicLaneIndex) return Mathf.Clamp(Mathf.RoundToInt((worldX - (originX - (lanes * cellSize) * 0.5f)) / cellSize - 0.5f), 0, lanes - 1);
@@ -236,5 +224,3 @@ public class SegmentPatternBuilder : MonoBehaviour
         return Mathf.Clamp(idx, 0, lanes - 1);
     }
 }
-
-

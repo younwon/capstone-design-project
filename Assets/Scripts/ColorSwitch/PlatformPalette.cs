@@ -10,6 +10,13 @@ public class PlatformPalette : ScriptableObject
     public GameObject prefabBlue;
     public GameObject prefabOrange;
 
+    // [추가] 가시 버전 팔레트를 연결하기 위한 설정
+    [Header("Spike Version (Optional)")]
+    [Tooltip("이 팔레트의 '가시 버전' 팔레트를 여기에 연결합니다.")]
+    public PlatformPalette spikeVersionPalette;
+    [Tooltip("가시 버전 팔레트가 사용될 확률(%)")]
+    [Range(0, 100)] public int spikeChance = 0;
+
     public GameObject GetPrefab(BlockColor c)
     {
         return c switch

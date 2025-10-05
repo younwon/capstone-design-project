@@ -10473,7 +10473,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 540.80005, y: 960}
+  m_AnchoredPosition: {x: 540.8125, y: 960}
   m_SizeDelta: {x: 1080.7997, y: 1918.5795}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1229303702
@@ -11754,8 +11754,9 @@ MonoBehaviour:
   startInputThreshold: 0.01
   moveSpeed: 5
   jumpForce: 11
+  footSeparation: 0.2
   groundProbeOffset: 0.02
-  groundProbeRadius: 0.4
+  groundProbeRadius: 0.1
   enableCoyote: 1
   coyoteTime: 0.1
   enableJumpBuffer: 1
@@ -11775,6 +11776,8 @@ MonoBehaviour:
   maxHP: 1
   invulnSeconds: 1
   ui: {fileID: 328545784}
+  hitSprite: {fileID: 21300000, guid: 227219900bf2af340a1a8702479fcc38, type: 3}
+  hitEffectDuration: 0.5
 --- !u!114 &1303449250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12705,7 +12708,7 @@ Transform:
   m_GameObject: {fileID: 1415527357}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.05, y: -1.16, z: 0}
+  m_LocalPosition: {x: 1.16, y: -1.16, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15670,7 +15673,7 @@ MonoBehaviour:
   tiers:
   - minMeters: 0
     entries:
-    - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
+    - prefab: {fileID: 6801262862034987100, guid: e9f1375b0c94678468c16e8ba47b8b5d, type: 3}
       weight: 100
   - minMeters: 30
     entries:

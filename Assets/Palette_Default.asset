@@ -16,3 +16,5 @@ MonoBehaviour:
   prefabYellow: {fileID: 4035714313487784480, guid: c633e64675198364c9a97d3468a0274d, type: 3}
   prefabBlue: {fileID: 4035714313487784480, guid: c2c8c72a3a678074a94b6086efb24835, type: 3}
   prefabOrange: {fileID: 4035714313487784480, guid: 91601c1179be3404bb11649744b190af, type: 3}
+  spikeVersionPalette: {fileID: 0}
+  spikeChance: 0
