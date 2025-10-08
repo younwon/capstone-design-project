@@ -94,6 +94,16 @@ public class ScoreSystem : MonoBehaviour
         // BestEver* 는 유지
     }
 
+    // 타이틀로 복귀할 때, 이번 세션 관련 임시 최고값/시간을 비워준다.
+    public void ClearSessionPeak()
+    {
+        // 프로젝트에 있는 실제 필드명에 맞춰 수정하세요.
+        // 대표적으로 아래 두 값만 0으로 초기화하면 충분합니다.
+        SessionMaxScore = 0;   // 이번 세션 최고 높이
+        ThisRunTime = 0f;      // 이번 판 누적 시간(표시용)
+    }
+
+
     // UI에서 쓰기 좋은 포맷 도우미 (MM:SS)
     public static string FormatMMSS(float seconds)
     {

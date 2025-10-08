@@ -1,3 +1,4 @@
+// PauseController.cs (확인용: Home 처리만 눈여겨봐 주세요)
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -7,23 +8,23 @@ using TMPro;
 public class PauseController : MonoBehaviour
 {
     [Header("Panel & Buttons")]
-    [SerializeField] GameObject pausePanel;     // PausePanel 루트
-    [SerializeField] Button btnResume;          // Resume
-    [SerializeField] Button btnSettings;        // Settings
-    [SerializeField] Button btnRestart;         // Restart (팝업 열기)
-    [SerializeField] Button btnHome;            // Home (팝업 열기)
-    [SerializeField] Button btnPauseIcon;       // 우상단 일시정지 아이콘 버튼
+    [SerializeField] GameObject pausePanel;
+    [SerializeField] Button btnResume;
+    [SerializeField] Button btnSettings;
+    [SerializeField] Button btnRestart;
+    [SerializeField] Button btnHome;
+    [SerializeField] Button btnPauseIcon;
 
     [Header("Settings Panel")]
-    [SerializeField] GameObject settingsPanel;  // 기존 SettingsPanel
+    [SerializeField] GameObject settingsPanel;
 
-    [Header("Labels (숫자 전용 텍스트)")]
-    [SerializeField] TMP_Text txtCurrent;       // CURRENT 값만(예: "123 m")
-    [SerializeField] TMP_Text txtRunBest;       // THIS RUN
-    [SerializeField] TMP_Text txtBest;          // BEST
+    [Header("Labels")]
+    [SerializeField] TMP_Text txtCurrent;
+    [SerializeField] TMP_Text txtRunBest;
+    [SerializeField] TMP_Text txtBest;
 
     [Header("Score Source")]
-    [SerializeField] ScoreSystem score;         // 드래그 또는 자동 할당
+    [SerializeField] ScoreSystem score;
 
     [Header("Popups")]
     [SerializeField] GameObject popupRestart;
@@ -34,16 +35,8 @@ public class PauseController : MonoBehaviour
     [SerializeField] Button btnHome_No;
     [SerializeField] Button btnHome_Yes;
 
-    [Header("Title (choose one later)")]
-    [Tooltip("별도 씬 전환을 사용할 경우 씬 이름. 비워두면 같은 씬 UI(titlePanel) 방식을 우선 사용.")]
-    [SerializeField] string titleSceneName = "";     // A 방식: 별도 씬
-    [Tooltip("같은 씬 UI로 타이틀을 쓸 경우 연결. 지금은 비워둬도 됨.")]
-    [SerializeField] GameObject titlePanel;          // B 방식: 같은 씬 UI
-
     [Header("Optional Hooks")]
-    [Tooltip("Home 확정 시 호출되는 훅(예: GameManager.ResetToTitle). 선택사항.")]
     [SerializeField] UnityEvent onHomeConfirmed;
-    [Tooltip("Restart 확정 시 호출되는 훅(씬 리로드 전에 상태 정리 등). 선택사항.")]
     [SerializeField] UnityEvent onRestartConfirmed;
 
     float prevTimeScale = 1f;
@@ -72,33 +65,29 @@ public class PauseController : MonoBehaviour
 
     void Update()
     {
-        // ★ GameOverUI가 입력을 잠갔으면 ESC 무시
+        // 게임오버 중에는 ESC 무시
         if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
             TogglePause();
     }
 
-    // ---------- Pause Toggle ----------
     public void TogglePause()
     {
-        // ★ 게임오버 중엔 토글 자체를 막기
         if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
-
         if (isPaused) ClosePause();
         else OpenPause();
     }
 
     public void OpenPause()
     {
-        // ★ 가드 한 번 더
         if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
         if (isPaused) return;
 
         RefreshStatsFromScore();
 
         prevTimeScale = Time.timeScale;
-        Time.timeScale = 0f;           // 게임 정지
+        Time.timeScale = 0f;
         isPaused = true;
 
         if (btnPauseIcon) btnPauseIcon.gameObject.SetActive(false);
@@ -122,10 +111,9 @@ public class PauseController : MonoBehaviour
 
     void OpenSettingsFromPause()
     {
-        if (settingsPanel) settingsPanel.SetActive(true); // 일시정지 유지
+        if (settingsPanel) settingsPanel.SetActive(true);
     }
 
-    // ---------- Popups ----------
     void OpenRestartPopup()
     {
         if (popupHome) popupHome.SetActive(false);
@@ -138,11 +126,12 @@ public class PauseController : MonoBehaviour
         if (popupHome) popupHome.SetActive(true);
     }
 
-    // ---------- Confirm Actions ----------
+    // -------- 재시작 / 홈 --------
     void ConfirmRestart()
     {
         onRestartConfirmed?.Invoke();
 
+        StartGate.SkipTitleOnce = true;       // 씬 리로드 후 바로 시작
         string scene = SceneManager.GetActiveScene().name;
         Time.timeScale = 1f;
         SceneManager.LoadScene(scene);
@@ -152,35 +141,29 @@ public class PauseController : MonoBehaviour
     {
         onHomeConfirmed?.Invoke();
 
+        // 비활성 오브젝트까지 포함해서 TitleUIController 찾기!
+        var title = Object.FindObjectOfType<TitleUIController>(true);
+        if (!title)
+        {
+            Debug.LogWarning("[PauseController] TitleUIController가 없어 타이틀 복귀를 수행할 수 없습니다.");
+            ClosePause();
+            return;
+        }
+
+        // 열려 있는 UI/팝업 정리
+        if (pausePanel && pausePanel.activeSelf) pausePanel.SetActive(false);
+        if (settingsPanel && settingsPanel.activeSelf) settingsPanel.SetActive(false);
+        if (popupHome && popupHome.activeSelf) popupHome.SetActive(false);
+        if (popupRestart && popupRestart.activeSelf) popupRestart.SetActive(false);
+
+        // 타이틀로 복귀(타이틀에서 TimeScale=0 처리)
         Time.timeScale = 1f;
+        isPaused = false;
+        if (btnPauseIcon) btnPauseIcon.gameObject.SetActive(true);
 
-        // 1) 같은 씬 UI(B 방식) 우선
-        if (titlePanel)
-        {
-            if (pausePanel && pausePanel.activeSelf) pausePanel.SetActive(false);
-            if (settingsPanel && settingsPanel.activeSelf) settingsPanel.SetActive(false);
-            if (popupHome && popupHome.activeSelf) popupHome.SetActive(false);
-            if (popupRestart && popupRestart.activeSelf) popupRestart.SetActive(false);
-
-            titlePanel.SetActive(true);
-            if (btnPauseIcon) btnPauseIcon.gameObject.SetActive(true);
-            isPaused = false;
-            return;
-        }
-
-        // 2) 별도 씬(A 방식)
-        if (!string.IsNullOrEmpty(titleSceneName))
-        {
-            SceneManager.LoadScene(titleSceneName);
-            return;
-        }
-
-        // 3) 둘 다 없으면 안전복귀
-        Debug.LogWarning("[PauseController] TitlePanel/TitleScene이 설정되지 않았습니다. 일시정지를 해제합니다.");
-        ClosePause();
+        title.ReturnToTitle();
     }
 
-    // ---------- Stats UI ----------
     public void RefreshStatsFromScore()
     {
         int cur = (score != null) ? score.CurrentScore : 0;
@@ -192,5 +175,6 @@ public class PauseController : MonoBehaviour
         if (txtBest) txtBest.text = $"{best} m";
     }
 }
+
 
 

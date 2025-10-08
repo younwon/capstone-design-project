@@ -23,30 +23,29 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] TMP_Text bestTimeText;    // ex) "00:30"
 
     [Header("New Record Visuals")]
-    [SerializeField] GameObject newBadge;             // (선택) NEW 배지 아이콘
-    [SerializeField] TMP_Text newRecordBanner;        // "NEW RECORD!" (비활성 시작)
-    [SerializeField] Image flashOverlay;              // 화면 전체 흰 이미지(알파 0)
+    [SerializeField] GameObject newBadge;
+    [SerializeField] TMP_Text newRecordBanner;
+    [SerializeField] Image flashOverlay;
 
     [Header("SFX (optional)")]
-    [SerializeField] AudioSource sfxSource;           // UI 전용 오디오 소스(PlayOnAwake 꺼짐)
-    [SerializeField] AudioClip sfxNewRecord;          // 신기록 효과음(선택)
+    [SerializeField] AudioSource sfxSource;
+    [SerializeField] AudioClip sfxNewRecord;
 
     [Header("Flash Tuning")]
-    [SerializeField, Range(0f, 1f)] float flashMaxAlpha = 0.9f; // 플래시 세기
-    [SerializeField] float flashDuration = 0.6f;                // 플래시 길이(초)
+    [SerializeField, Range(0f, 1f)] float flashMaxAlpha = 0.9f;
+    [SerializeField] float flashDuration = 0.6f;
 
     [Header("CountUp Tuning")]
-    [SerializeField] float countThisDuration = 0.6f; // This Run 카운트업 시간
-    [SerializeField] float countBestDuration = 0.6f; // Best 카운트업 시간
-    [SerializeField] bool easeOut = true;            // 끝으로 갈수록 천천히
+    [SerializeField] float countThisDuration = 0.6f;
+    [SerializeField] float countBestDuration = 0.6f;
+    [SerializeField] bool easeOut = true;
 
     [Header("Title/Home Options")]
-    [SerializeField] GameObject titlePanel;           // 같은 씬 타이틀 UI
-    [SerializeField] string titleSceneName = "Title"; // 별도 씬 이름
+    [SerializeField] GameObject titlePanel;
+    [SerializeField] string titleSceneName = "Title"; // 사용 안 해도 됨(백업)
 
     [Header("Timing")]
-    [SerializeField, Tooltip("게임오버 후 UI가 뜨기까지의 딜레이(초, 실제시간)")]
-    float uiDelay = 0.8f;
+    [SerializeField] float uiDelay = 0.8f;
 
     [Header("Hide these when shown")]
     [SerializeField] GameObject[] hideWhenShown;
@@ -54,7 +53,6 @@ public class GameOverUI : MonoBehaviour
     readonly List<GameObject> hiddenList = new List<GameObject>();
     bool suppressRestoreHUD = false;
 
-    // --- 캐시(게임오버 시점 값) ---
     int cachedThisRun = 0;
     int cachedBest = 0;
     string cachedThisTime = "00:00";
@@ -71,7 +69,7 @@ public class GameOverUI : MonoBehaviour
         if (btnHome) btnHome.onClick.AddListener(OnClickHome);
 
         if (newRecordBanner) newRecordBanner.gameObject.SetActive(false);
-        if (flashOverlay) flashOverlay.color = new Color(1, 1, 1, 0); // 알파 0 시작
+        if (flashOverlay) flashOverlay.color = new Color(1, 1, 1, 0);
     }
 
     void OnDestroy()
@@ -86,7 +84,6 @@ public class GameOverUI : MonoBehaviour
         IsShown = false;
     }
 
-    // ====== 게임오버 신호 수신 ======
     void OnGameOverSimple(string reason)
     {
         if (ScoreSystem.I)
@@ -112,30 +109,23 @@ public class GameOverUI : MonoBehaviour
     IEnumerator ShowAfterDelayRealtime()
     {
         float t = 0f;
-        while (t < uiDelay)
-        {
-            t += Time.unscaledDeltaTime;   // 실제 시간 기준
-            yield return null;
-        }
+        while (t < uiDelay) { t += Time.unscaledDeltaTime; yield return null; }
 
-        // UI 표시 + 이 타이밍에 정지
         Show();
         Time.timeScale = 0f;
 
-        // 시퀀스 실행: 카운트업 → (신기록이면) 연출
         StartCoroutine(Sequence_CountUp_ThenFX());
     }
 
     IEnumerator Sequence_CountUp_ThenFX()
     {
-        // 초기 텍스트
         if (thisTimeText) thisTimeText.text = cachedThisTime;
         if (bestTimeText) bestTimeText.text = cachedBestTime;
 
         if (newBadge) newBadge.SetActive(false);
         if (newRecordBanner) newRecordBanner.gameObject.SetActive(false);
 
-        if (bestValueText) bestValueText.text = ""; // This Run 끝날 때까지 빈 칸
+        if (bestValueText) bestValueText.text = "";
 
         if (thisValueText)
             yield return CountUpNumber(thisValueText, 0, cachedThisRun, countThisDuration);
@@ -150,23 +140,17 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
-    // ====== 숫자 카운트업(단위 m 고정) ======
     IEnumerator CountUpNumber(TMP_Text target, int from, int to, float duration)
     {
         if (!target) yield break;
-
-        if (duration <= 0.0001f)
-        {
-            target.text = $"{to} m";
-            yield break;
-        }
+        if (duration <= 0.0001f) { target.text = $"{to} m"; yield break; }
 
         float t = 0f;
         while (t < duration)
         {
-            t += Time.unscaledDeltaTime;  // 정지 상태에서도 진행
+            t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / duration);
-            if (easeOut) k = EaseOutQuad(k);
+            if (easeOut) k = 1f - (1f - k) * (1f - k);
 
             int value = Mathf.RoundToInt(Mathf.Lerp(from, to, k));
             target.text = $"{value} m";
@@ -175,52 +159,40 @@ public class GameOverUI : MonoBehaviour
         target.text = $"{to} m";
     }
 
-    // ====== 표시/숨김 ======
     void Show()
     {
         hiddenList.Clear();
         if (hideWhenShown != null)
         {
             foreach (var go in hideWhenShown)
-            {
-                if (go && go.activeSelf)
-                {
-                    go.SetActive(false);
-                    hiddenList.Add(go);
-                }
-            }
+                if (go && go.activeSelf) { go.SetActive(false); hiddenList.Add(go); }
         }
 
         if (!cg) return;
-        cg.alpha = 1f;
-        cg.interactable = true;
-        cg.blocksRaycasts = true;
-
+        cg.alpha = 1f; cg.interactable = true; cg.blocksRaycasts = true;
         IsShown = true;
     }
 
     void HideImmediate()
     {
         if (!cg) return;
-        cg.alpha = 0f;
-        cg.interactable = false;
-        cg.blocksRaycasts = false;
+        cg.alpha = 0f; cg.interactable = false; cg.blocksRaycasts = false;
         IsShown = false;
     }
 
     void RestoreHUD()
     {
-        foreach (var go in hiddenList)
-            if (go) go.SetActive(true);
+        foreach (var go in hiddenList) if (go) go.SetActive(true);
         hiddenList.Clear();
     }
 
-    // ====== 버튼 ======
     public void OnClickRestart()
     {
         Time.timeScale = 1f;
         InputLocked = false;
         suppressRestoreHUD = true;
+
+        StartGate.SkipTitleOnce = true;  // 재시작 시 타이틀 스킵
         var s = SceneManager.GetActiveScene();
         SceneManager.LoadScene(s.buildIndex);
     }
@@ -231,61 +203,43 @@ public class GameOverUI : MonoBehaviour
         InputLocked = false;
         suppressRestoreHUD = true;
 
-        if (titlePanel)
+        // 같은 씬 UI 방식: Title로 복귀
+        var title = Object.FindObjectOfType<TitleUIController>();
+        if (title)
         {
             HideImmediate();
-            if (!titlePanel.activeSelf) titlePanel.SetActive(true);
+            title.ReturnToTitle();
             return;
         }
 
+        // (백업) 별도 씬이 있을 때만 사용
         if (!string.IsNullOrEmpty(titleSceneName))
         {
             SceneManager.LoadScene(titleSceneName);
             return;
         }
 
-        Debug.LogWarning("[GameOverUI] TitlePanel/Scene 설정이 없어 현재 씬을 재시작합니다.");
+        // 둘 다 없으면 재시작
         var sc = SceneManager.GetActiveScene();
         SceneManager.LoadScene(sc.buildIndex);
     }
 
-    // ====== 신기록 연출(플래시 + 배너 + SFX) ======
     void PlayNewRecordFX()
     {
         if (flashOverlay) StartCoroutine(FlashWhite(flashOverlay, flashMaxAlpha, flashDuration));
-        if (newRecordBanner) StartCoroutine(BannerBlinkLoop(newRecordBanner));   // UI 열려있는 동안 계속 깜빡
-
-        // (옵션) 사운드
-        if (sfxSource && sfxNewRecord)
-            sfxSource.PlayOneShot(sfxNewRecord);
+        if (newRecordBanner) StartCoroutine(BannerBlinkLoop(newRecordBanner));
+        if (sfxSource && sfxNewRecord) sfxSource.PlayOneShot(sfxNewRecord);
     }
 
     IEnumerator FlashWhite(Image img, float maxAlpha, float dur)
     {
         Color c = img.color;
-        float up = dur * 0.4f;
-        float down = dur - up;
+        float up = dur * 0.4f, down = dur - up;
 
-        // up
         float t = 0f;
-        while (t < up)
-        {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(t / up);
-            c.a = Mathf.Lerp(0f, maxAlpha, k);
-            img.color = c;
-            yield return null;
-        }
-        // down
+        while (t < up) { t += Time.unscaledDeltaTime; c.a = Mathf.Lerp(0f, maxAlpha, t / up); img.color = c; yield return null; }
         t = 0f;
-        while (t < down)
-        {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(t / down);
-            c.a = Mathf.Lerp(maxAlpha, 0f, k);
-            img.color = c;
-            yield return null;
-        }
+        while (t < down) { t += Time.unscaledDeltaTime; c.a = Mathf.Lerp(maxAlpha, 0f, t / down); img.color = c; yield return null; }
         c.a = 0f; img.color = c;
     }
 
@@ -294,21 +248,16 @@ public class GameOverUI : MonoBehaviour
         banner.gameObject.SetActive(true);
         float speed = 5f;
         Color baseC = banner.color;
-        while (IsShown) // 패널이 열려 있는 동안 계속 깜빡
+        while (IsShown)
         {
             float a = Mathf.Lerp(0.35f, 1f, (Mathf.Sin(Time.unscaledTime * speed) + 1f) * 0.5f);
             banner.color = new Color(baseC.r, baseC.g, baseC.b, a);
             yield return null;
         }
-        // 닫히면 원복
         banner.color = new Color(baseC.r, baseC.g, baseC.b, 1f);
         banner.gameObject.SetActive(false);
     }
-
-    // ===== Easing =====
-    float EaseOutQuad(float x) => 1f - (1f - x) * (1f - x);
 }
-
 
 
 

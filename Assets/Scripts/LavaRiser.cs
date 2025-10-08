@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,6 +34,17 @@ public class LavaRiser : MonoBehaviour
     public float damageCooldown = 1.0f;
     public float bounceUpVelocity = 7.5f;
 
+    // ---------- ★ NEW : 보조 트리거(플레이어 움직임 감지) ----------
+    [Header("Start Trigger (optional)")]
+    [Tooltip("게임 시작 후 플레이어가 움직이거나 점프 입력이 들어오면 자동으로 StartLava()를 1회 호출합니다.")]
+    [SerializeField] bool autoStartWhenPlayerMoves = true;
+    [SerializeField, Tooltip("속도 임계값(이 이상이면 '움직임'으로 간주)")]
+    float moveSpeedThreshold = 0.02f;
+
+    PlayerController2D player;       // 자동 탐색
+    Rigidbody2D playerRb;            // 자동 탐색
+    // -------------------------------------------------------------
+
     BoxCollider2D col;
     float startTime;
     readonly Dictionary<PlayerHP, float> lastHit = new();
@@ -53,6 +63,9 @@ public class LavaRiser : MonoBehaviour
         }
         if (bodySR) bodySR.drawMode = SpriteDrawMode.Tiled;
         if (capSR) capSR.drawMode = SpriteDrawMode.Tiled;
+
+        // ★ NEW : 플레이어 캐시 시도
+        CachePlayerIfNeeded();
     }
 
     void Start()
@@ -64,9 +77,13 @@ public class LavaRiser : MonoBehaviour
 
     void Update()
     {
-        if (!lavaStarted) return; // 신호 전에는 상승 안 함
+        // ★ NEW : 아직 시작 전이라면, 플레이어 움직임으로 한 번 시작 시도
+        if (!lavaStarted && autoStartWhenPlayerMoves && StartGate.GameStarted)
+        {
+            TryAutoStartFromPlayerMotion();
+        }
 
-        ResizeAndLayout();
+        if (!lavaStarted) return; // 신호 전에는 상승 안 함
 
         if (!cam) cam = Camera.main ? Camera.main.transform : null;
         if (!cam) return;
@@ -87,9 +104,52 @@ public class LavaRiser : MonoBehaviour
         transform.position += Vector3.up * (speed * Time.deltaTime);
     }
 
+    // ==== 외부에서 타이틀 귀환 시 호출될 수 있는 리셋용 메서드 ====
+    /// <summary>
+    /// 용암을 정지시키고, 카메라 하단 기준 startBelowScreenUnits 만큼 아래에 재배치.
+    /// 타이틀 복귀 시 호출되어도 안전합니다.
+    /// </summary>
+    public void ResetToStart()
+    {
+        // 상승 중지
+        lavaStarted = false;
+
+        // 타이머 초기화(가속/서지 계산 초기화)
+        startTime = Time.time;
+
+        // 기준 카메라 보정
+        if (!cam) cam = Camera.main ? Camera.main.transform : null;
+
+        // 시작 위치로 내리고 폭/콜라이더 재설정
+        PlaceStartBelowScreen();
+        ResizeAndLayout();
+
+        // 마지막 피격 쿨타임도 초기화(안전)
+        lastHit.Clear();
+    }
+
+    /// <summary>
+    /// 외부에서 수동으로 시작/정지 제어가 필요할 때 사용.
+    /// </summary>
+    public void SetStarted(bool started)
+    {
+        if (started) StartLava();
+        else lavaStarted = false;
+    }
+
+    public void StartLava()
+    {
+        lavaStarted = true;
+        startTime = Time.time;
+    }
+
+    // ==== 내부 구현 ====
+
     void PlaceStartBelowScreen()
     {
         var c = Camera.main;
+        if (!c || !cam) return;
+
         float halfH = c.orthographicSize;
         float camBottom = cam.position.y - halfH;
 
@@ -107,9 +167,12 @@ public class LavaRiser : MonoBehaviour
         if (bodySR)
         {
             var c = Camera.main;
-            float bodyH = c.orthographicSize * 2f * bodyHeightMul;
-            bodySR.size = new Vector2(width, bodyH);
-            bodySR.transform.localPosition = new Vector3(0f, -bodyH * 0.5f, 0f);
+            if (c)
+            {
+                float bodyH = c.orthographicSize * 2f * bodyHeightMul;
+                bodySR.size = new Vector2(width, bodyH);
+                bodySR.transform.localPosition = new Vector3(0f, -bodyH * 0.5f, 0f);
+            }
         }
 
         // Cap은 표면에 얇게 놓기
@@ -120,16 +183,46 @@ public class LavaRiser : MonoBehaviour
         }
 
         // 충돌 영역: 표면 바로 아래 얇게
-        col.isTrigger = true;
-        col.size = new Vector2(width, Mathf.Max(0.6f, capHeight + 0.2f));
-        col.offset = new Vector2(0f, -col.size.y * 0.5f + capYOffset + 0.05f);
+        if (col)
+        {
+            col.isTrigger = true;
+            col.size = new Vector2(width, Mathf.Max(0.6f, capHeight + 0.2f));
+            col.offset = new Vector2(0f, -col.size.y * 0.5f + capYOffset + 0.05f);
+        }
+    }
+
+    // 타이틀 복귀 시 용암 표면을 카메라 하단 밑으로 다시 내린다.
+    public bool TryResetToStart()
+    {
+        // 참조 보정
+        if (!cam) cam = Camera.main ? Camera.main.transform : null;
+        if (!grid) grid = GridManager.I ? GridManager.I : FindObjectOfType<GridManager>();
+        if (!cam || !Camera.main) return false;
+
+        var c = Camera.main;
+        float halfH = c.orthographicSize;
+        float camBottom = cam.position.y - halfH;
+
+        // “표면” 위치 재설정
+        Vector3 p = transform.position;
+        p.y = camBottom - startBelowScreenUnits;   // 화면 하단에서 지정 거리만큼 아래
+        if (grid) p.x = grid.originX;              // 가로 정렬(그리드 기준)
+        transform.position = p;
+
+        // 상태 리셋
+        lavaStarted = false;   // 타이틀에서는 멈춰있게
+        startTime = Time.time;
+
+        // 렌더/콜라이더 다시 맞춤
+        ResizeAndLayout();
+        return true;
     }
 
     float GetPlayWidth()
     {
         if (grid != null) { var (l, r) = grid.GetPlayBoundsX(); return r - l; }
         var c = Camera.main;
-        return c.orthographicSize * 2f * c.aspect;
+        return c ? c.orthographicSize * 2f * c.aspect : 10f;
     }
 
     void OnTriggerStay2D(Collider2D other)
@@ -147,11 +240,35 @@ public class LavaRiser : MonoBehaviour
         if (rb && rb.velocity.y < bounceUpVelocity)
             rb.velocity = new Vector2(rb.velocity.x, bounceUpVelocity);
     }
-    public void StartLava()
+
+    // ---------- ★ NEW : 보조 트리거 구현 ----------
+    void CachePlayerIfNeeded()
     {
-        lavaStarted = true;
-        startTime = Time.time;
+        if (!player) player = Object.FindObjectOfType<PlayerController2D>(true);
+        if (player && !playerRb) playerRb = player.GetComponent<Rigidbody2D>();
     }
+
+    void TryAutoStartFromPlayerMotion()
+    {
+        CachePlayerIfNeeded();
+        if (!player && !playerRb) return;
+
+        // 입력 또는 실제 속도로 판단(둘 중 하나라도 감지되면 시작)
+        bool inputMove = Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.01f || Input.GetButtonDown("Jump");
+        bool rbMove = false;
+        if (playerRb)
+        {
+            var v = playerRb.velocity;
+            rbMove = Mathf.Abs(v.x) > moveSpeedThreshold || Mathf.Abs(v.y) > moveSpeedThreshold;
+        }
+
+        if (inputMove || rbMove)
+        {
+            StartLava(); // 한 번만 호출됨(lavaStarted=true로 전환)
+        }
+    }
+    // ------------------------------------------------
 }
+
 
 
