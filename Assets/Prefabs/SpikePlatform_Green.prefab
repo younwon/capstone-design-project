@@ -344,11 +344,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spikeChildObject: {fileID: 7867267401438453139}
-  riseAmount: 0.3
+  riseAmount: 0.2
   moveSpeed: 5
   initialDelay: 1
   activeDuration: 1
-  inactiveDuration: 2
+  inactiveDuration: 3
 --- !u!1 &7867267401438453139
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,7 +374,7 @@ Transform:
   m_GameObject: {fileID: 7867267401438453139}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.049000025, y: 0.56444997, z: 0}
+  m_LocalPosition: {x: 0.049000025, y: 0.63, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
