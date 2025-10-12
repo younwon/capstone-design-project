@@ -10823,7 +10823,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1206761318}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e012676bd58a5e64283bf4905aa6f442, type: 3}
   m_Name: 
@@ -16568,14 +16568,22 @@ MonoBehaviour:
   tiers:
   - minMeters: 0
     entries:
-    - prefab: {fileID: 6801262862034987100, guid: e9f1375b0c94678468c16e8ba47b8b5d, type: 3}
+    - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
       weight: 100
   - minMeters: 30
     entries:
     - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
       weight: 70
-    - prefab: {fileID: 6801262862034987100, guid: 795ab65891192674d9e7ad155953aa45, type: 3}
+    - prefab: {fileID: 1834732117358071206, guid: 62c83312531dcba42af2b62d107de0a5, type: 3}
       weight: 30
+  - minMeters: 60
+    entries:
+    - prefab: {fileID: 6801262862034987100, guid: e9f1375b0c94678468c16e8ba47b8b5d, type: 3}
+      weight: 50
+    - prefab: {fileID: 1834732117358071206, guid: 62c83312531dcba42af2b62d107de0a5, type: 3}
+      weight: 30
+    - prefab: {fileID: 6801262862034987100, guid: b543af4a599b9d84ea4f0b9938d26ef4, type: 3}
+      weight: 20
 --- !u!4 &1723445469
 Transform:
   m_ObjectHideFlags: 0

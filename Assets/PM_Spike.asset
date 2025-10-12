@@ -17,4 +17,6 @@ MonoBehaviour:
   prefabBlue: {fileID: 4035714313487784480, guid: b4c56a60cdc3bd0468522abd49505137, type: 3}
   prefabOrange: {fileID: 4035714313487784480, guid: 02f7ee79f451b21438b6b0de87f0fcea, type: 3}
   spikeVersionPalette: {fileID: 11400000, guid: 597932a93f74c9849b5d56f948dea031, type: 2}
-  spikeChance: 25
+  spikeChance: 30
+  springVersionAsset: {fileID: 0}
+  springChance: 0

@@ -9,6 +9,9 @@ public struct LaneRowFine
     public float yFine;
     public int colorGroup;
     public int paletteIndex;
+
+    [Tooltip("체크 해제 시, 이 포인트는 절대 스프링 블록으로 생성되지 않습니다.")]
+    public bool allowSpring; // 스프링 허용 여부 변수 추가
 }
 
 public class SegmentPatternBuilder : MonoBehaviour
@@ -18,12 +21,12 @@ public class SegmentPatternBuilder : MonoBehaviour
 
     [Header("패턴 포인트들")]
     public LaneRowFine[] points = new LaneRowFine[] {
-        new LaneRowFine{ lane=0, rowOffset=1, yFine=0f, colorGroup=0 },
-        new LaneRowFine{ lane=2, rowOffset=2, yFine=0f, colorGroup=0 },
-        new LaneRowFine{ lane=4, rowOffset=3, yFine=0f, colorGroup=0 },
-        new LaneRowFine{ lane=6, rowOffset=4, yFine=0f, colorGroup=0 },
-        new LaneRowFine{ lane=4, rowOffset=5, yFine=0f, colorGroup=0 },
-        new LaneRowFine{ lane=2, rowOffset=6, yFine=0f, colorGroup=0 },
+        new LaneRowFine{ lane=0, rowOffset=1, yFine=0f, colorGroup=0, allowSpring=true },
+        new LaneRowFine{ lane=2, rowOffset=2, yFine=0f, colorGroup=0, allowSpring=true },
+        new LaneRowFine{ lane=4, rowOffset=3, yFine=0f, colorGroup=0, allowSpring=true },
+        new LaneRowFine{ lane=6, rowOffset=4, yFine=0f, colorGroup=0, allowSpring=true },
+        new LaneRowFine{ lane=4, rowOffset=5, yFine=0f, colorGroup=0, allowSpring=true },
+        new LaneRowFine{ lane=2, rowOffset=6, yFine=0f, colorGroup=0, allowSpring=true },
     };
 
     [Header("Same-lane Extra Gap")]
@@ -170,12 +173,32 @@ public class SegmentPatternBuilder : MonoBehaviour
             PlatformPalette paletteToUse = palettes[index];
 
             // [수정] 여기서 확률적으로 가시 팔레트로 바꿔치기할지 결정합니다.
-            if (paletteToUse.spikeVersionPalette != null && Random.Range(0, 100) < paletteToUse.spikeChance)
+            // 생성할 최종 프리팹을 담을 변수
+            GameObject prefab = null;
+
+            // 현재 처리 중인 포인트의 정보를 가져옵니다.
+            var currentPoint = points[i];
+
+            // 1. 스프링 블록 확률 체크
+            // [추가된 조건] currentPoint.allowSpring가 true일 때만 확률 체크를 실행합니다.
+            if (currentPoint.allowSpring && paletteToUse.springVersionAsset != null && Random.Range(0f, 100f) < paletteToUse.springChance)
             {
-                paletteToUse = paletteToUse.spikeVersionPalette; // 팔레트를 가시 버전으로 교체!
+                // 스프링 블록이 당첨되면 프리팹을 스프링 블록으로 교체!
+                prefab = paletteToUse.springVersionAsset.GetPrefab();
+            }
+            // 2. 가시 블록 확률 다음으로 체크 (스프링이 아닐 경우)
+            else if (paletteToUse.spikeVersionPalette != null && Random.Range(0, 100) < paletteToUse.spikeChance)
+            {
+                // 가시 블록이 당첨되면, 해당 색상의 가시 프리팹으로 교체!
+                var spikePalette = paletteToUse.spikeVersionPalette;
+                prefab = spikePalette.GetPrefab(pick); // 'pick'된 색상에 맞는 가시 블록을 가져옴
             }
 
-            var prefab = paletteToUse.GetPrefab(pick);
+            // 3. 스프링/가시 둘 다 당첨되지 않았으면 일반 프리팹 사용
+            if (prefab == null)
+            {
+                prefab = paletteToUse.GetPrefab(pick);
+            }
 
             if (prefab)
             {
