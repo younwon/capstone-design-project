@@ -59,17 +59,19 @@ public class CoinManager : MonoBehaviour
         SaveCoins();
     }
 
-    public void SpendCoin(int amount)
+    public bool SpendCoin(int amount)
     {
         if (currentCoins >= amount)
         {
             currentCoins -= amount;
             UpdateCoinText();
             SaveCoins();
+            return true; // 코인 소모 성공
         }
         else
         {
             Debug.LogWarning("코인이 부족합니다! (현재 코인: " + currentCoins + ")");
+            return false; // 코인 소모 실패
         }
     }
 
