@@ -41,14 +41,18 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] bool easeOut = true;
 
     [Header("Title/Home Options")]
-    [SerializeField] GameObject titlePanel;
-    [SerializeField] string titleSceneName = "Title"; // 사용 안 해도 됨(백업)
+    [SerializeField] GameObject titlePanel;          // 같은 씬 타이틀 UI (있어도 이번엔 사용 X)
+    [SerializeField] string titleSceneName = "Title";// 백업용(별도 씬)
 
     [Header("Timing")]
     [SerializeField] float uiDelay = 0.8f;
 
     [Header("Hide these when shown")]
     [SerializeField] GameObject[] hideWhenShown;
+
+    [Header("Score Sources (auto)")]
+    [SerializeField] ScoreSystem score;             // 일반 모드
+    [SerializeField] ScoreSystem_Speed speedScore;  // 스피드런 모드
 
     readonly List<GameObject> hiddenList = new List<GameObject>();
     bool suppressRestoreHUD = false;
@@ -58,10 +62,14 @@ public class GameOverUI : MonoBehaviour
     string cachedThisTime = "00:00";
     string cachedBestTime = "00:00";
     bool cachedIsNew = false;
+    bool cachedIsSpeedMode = false;
 
     void Awake()
     {
         HideImmediate();
+
+        if (!score) score = ScoreSystem.I;
+        if (!speedScore) speedScore = FindObjectOfType<ScoreSystem_Speed>();
 
         SimpleGameOver.OnGameOver += OnGameOverSimple;
 
@@ -86,14 +94,23 @@ public class GameOverUI : MonoBehaviour
 
     void OnGameOverSimple(string reason)
     {
-        if (ScoreSystem.I)
+        cachedIsSpeedMode = (speedScore != null && speedScore.isActiveAndEnabled);
+
+        if (cachedIsSpeedMode)
         {
-            var s = ScoreSystem.I;
-            cachedThisRun = s.SessionMaxScore;
-            cachedBest = s.BestEverScore;
-            cachedThisTime = ScoreSystem.FormatMMSS(s.ThisRunTime);
-            cachedBestTime = ScoreSystem.FormatMMSS(s.BestEverTime);
-            cachedIsNew = s.IsNewRecord;
+            cachedThisRun = speedScore.DisplayScore; // FreezeAtEnd 반영
+            cachedBest = speedScore.BestEverScore;
+            cachedIsNew = speedScore.IsNewRecord;
+            cachedThisTime = "--:--";
+            cachedBestTime = "--:--";
+        }
+        else if (score != null)
+        {
+            cachedThisRun = score.SessionMaxScore;
+            cachedBest = score.BestEverScore;
+            cachedThisTime = ScoreSystem.FormatMMSS(score.ThisRunTime);
+            cachedBestTime = ScoreSystem.FormatMMSS(score.BestEverTime);
+            cachedIsNew = score.IsNewRecord;
         }
         else
         {
@@ -119,8 +136,16 @@ public class GameOverUI : MonoBehaviour
 
     IEnumerator Sequence_CountUp_ThenFX()
     {
-        if (thisTimeText) thisTimeText.text = cachedThisTime;
-        if (bestTimeText) bestTimeText.text = cachedBestTime;
+        if (cachedIsSpeedMode)
+        {
+            if (thisTimeText) thisTimeText.gameObject.SetActive(false);
+            if (bestTimeText) bestTimeText.gameObject.SetActive(false);
+        }
+        else
+        {
+            if (thisTimeText) { thisTimeText.gameObject.SetActive(true); thisTimeText.text = cachedThisTime; }
+            if (bestTimeText) { bestTimeText.gameObject.SetActive(true); bestTimeText.text = cachedBestTime; }
+        }
 
         if (newBadge) newBadge.SetActive(false);
         if (newRecordBanner) newRecordBanner.gameObject.SetActive(false);
@@ -192,36 +217,23 @@ public class GameOverUI : MonoBehaviour
         InputLocked = false;
         suppressRestoreHUD = true;
 
-        StartGate.SkipTitleOnce = true;  // 재시작 시 타이틀 스킵
+        StartGate.SkipTitleOnce = true;  // 재시작 시 바로 시작
         var s = SceneManager.GetActiveScene();
         SceneManager.LoadScene(s.buildIndex);
     }
 
+    // 🔧 여기만 변경: 타이틀로는 '씬 리로드'로 돌아가 초기 상태 보장
     public void OnClickHome()
     {
         Time.timeScale = 1f;
         InputLocked = false;
         suppressRestoreHUD = true;
 
-        // 같은 씬 UI 방식: Title로 복귀
-        var title = Object.FindObjectOfType<TitleUIController>();
-        if (title)
-        {
-            HideImmediate();
-            title.ReturnToTitle();
-            return;
-        }
+        // 타이틀에서 자동 시작 금지
+        StartGate.SkipTitleOnce = false;
 
-        // (백업) 별도 씬이 있을 때만 사용
-        if (!string.IsNullOrEmpty(titleSceneName))
-        {
-            SceneManager.LoadScene(titleSceneName);
-            return;
-        }
-
-        // 둘 다 없으면 재시작
         var sc = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(sc.buildIndex);
+        SceneManager.LoadScene(sc.buildIndex); // 씬을 처음 상태로 리셋 → TitleUI가 타이틀 셋업
     }
 
     void PlayNewRecordFX()
@@ -258,6 +270,7 @@ public class GameOverUI : MonoBehaviour
         banner.gameObject.SetActive(false);
     }
 }
+
 
 
 

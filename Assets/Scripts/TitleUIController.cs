@@ -1,6 +1,7 @@
-// TitleUIController.cs
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class TitleUIController : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class TitleUIController : MonoBehaviour
 
     [Header("Tap Anywhere Button")]
     [SerializeField] Button startCatcher;          // 전체화면 투명 버튼
+    [SerializeField] CanvasGroup startCatcherGroup;
+
 
     [Header("Optional refs for clean reset")]
     [SerializeField] Transform playerStartLocation;
@@ -19,11 +22,22 @@ public class TitleUIController : MonoBehaviour
     [SerializeField] LavaRiser lava;               // 비우면 자동
     [SerializeField] LogoAnimator logoAnimator;    // 로고 애니메이터(선택)
 
+    [Header("Scenes")]
+    [SerializeField] string colorClimbScene = "ColorClimb";     // 기존 모드 씬 이름
+    [SerializeField] string speedRunScene = "SpeedRun"; // 타임어택 씬 이름
+
     // 내부 캐시(카메라 시작 위치)
     Vector3 _camStartPos;
 
+
     void Awake()
     {
+        if (!startCatcher && transform.Find("StartCatcher"))
+            startCatcher = transform.Find("StartCatcher").GetComponent<Button>();
+
+        if (!startCatcherGroup && startCatcher)
+            startCatcherGroup = startCatcher.GetComponent<CanvasGroup>();
+
         if (!titlePanel) titlePanel = gameObject;
         if (!mainCamera && Camera.main) mainCamera = Camera.main.transform;
         if (!player) player = FindObjectOfType<PlayerController2D>(true);
@@ -58,10 +72,35 @@ public class TitleUIController : MonoBehaviour
 
     void Update()
     {
-        // 타이틀이 열려 있고, 아무 키나 눌렀다면 시작
-        if (titlePanel && titlePanel.activeInHierarchy)
+        // 타이틀이 떠 있을 때만 처리
+        if (!titlePanel || !titlePanel.activeInHierarchy) return;
+
+        // 1) 마우스 클릭(에디터/PC 테스트용)
+        if (Input.GetMouseButtonDown(0))
         {
-            if (Input.anyKeyDown) BeginGame();
+            // UI(버튼 등) 위에서 클릭했으면 시작 금지
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                return;
+
+            BeginGame();
+            return;
+        }
+
+        // 2) 터치(모바일)
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            var touch = Input.GetTouch(0);
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                return;
+
+            BeginGame();
+            return;
+        }
+
+        // 3) 키보드로도 시작하고 싶으면 (Space/Enter 정도만)
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+        {
+            BeginGame();
         }
     }
 
@@ -87,8 +126,14 @@ public class TitleUIController : MonoBehaviour
         // 타이틀 보이기
         if (titlePanel && !titlePanel.activeSelf) titlePanel.SetActive(true);
 
+        if (titlePanel && !titlePanel.activeSelf) titlePanel.SetActive(true);
+        ArmStartCatcher();
+
         // 로고 애니메이션 재시작
         if (logoAnimator) logoAnimator.RestartLoop();
+
+        var cd = FindObjectOfType<CountDown>(true);
+        if (cd) cd.PrepareForTitle();
     }
 
     public void BeginGame()
@@ -108,6 +153,17 @@ public class TitleUIController : MonoBehaviour
         // 타이틀 끄고 진행 on
         if (titlePanel && titlePanel.activeSelf) titlePanel.SetActive(false);
         StartGate.EnableGameplay();
+
+        // StartCatcher 클릭 막기
+        if (startCatcherGroup)
+        {
+            startCatcherGroup.interactable = false;
+            startCatcherGroup.blocksRaycasts = false;
+        }
+
+        var cd = FindObjectOfType<CountDown>(true);
+        if (cd) cd.PrepareForRun();
+
     }
 
     // 재시작(타이틀 스킵)용: 바로 인게임으로
@@ -129,6 +185,7 @@ public class TitleUIController : MonoBehaviour
     public void ReturnToTitle()
     {
         OpenTitleState();
+        ArmStartCatcher();
     }
 
     // 실제 위치/상태 리셋 처리
@@ -162,5 +219,40 @@ public class TitleUIController : MonoBehaviour
             score.ClearSessionPeak(); // 세션 피크/시간 0으로(우리가 추가한 메서드)
         }
     }
+
+    // TitleUIController.cs 안에 아래 메서드만 추가
+    public void OnClickModeChange()
+    {
+        // 현재 모드 토글: ColorClimb -> SpeedRun, SpeedRun -> ColorClimb
+        bool gotoSpeedRun = !ModePrefs.IsSpeedRun;
+        ModePrefs.IsSpeedRun = gotoSpeedRun;
+
+        string target = gotoSpeedRun ? speedRunScene : colorClimbScene;
+
+        // 다음 씬에서 바로 시작(타이틀 스킵) + 페이드 연출
+        FadeRouter.Load(target, skipTitleOnce: false);
+    }
+
+    void ArmStartCatcher()
+    {
+        if (!startCatcher) return;
+
+        // 버튼 자체 활성/상호작용
+        startCatcher.enabled = true;
+        startCatcher.interactable = true;
+
+        // 버튼의 그래픽(주로 Image)이 Raycast를 받도록
+        var g = startCatcher.targetGraphic;
+        if (g) g.raycastTarget = true;
+
+        // 혹시 그룹으로 막아놨다면 해제
+        var cg = startCatcher.GetComponentInParent<CanvasGroup>();
+        if (cg) { cg.interactable = true; cg.blocksRaycasts = true; }
+
+        // 숨겨진 차폐물(검은 페이드, 팝업 등)이 남아있다면 끄기
+        // (Scene 내에서 사용하는 다른 전면 오브젝트가 있다면 여기서 확실히 Off)
+    }
+
+
 }
 
