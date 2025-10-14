@@ -17,6 +17,13 @@ public class PlatformPalette : ScriptableObject
     [Tooltip("가시 버전 팔레트가 사용될 확률(%)")]
     [Range(0, 100)] public int spikeChance = 0;
 
+    // [추가된 부분] 스프링 블록 에셋을 연결하기 위한 설정
+    [Header("Spring Version (Optional)")]
+    [Tooltip("스프링 블록 정보를 담은 'SinglePlatformAsset'을 여기에 연결합니다.")]
+    public SinglePlatformAsset springVersionAsset; // SinglePlatformAsset 타입으로 변경
+    [Tooltip("스프링 블록이 사용될 확률(%)")]
+    [Range(0f, 100f)] public float springChance = 0f;
+
     public GameObject GetPrefab(BlockColor c)
     {
         return c switch
