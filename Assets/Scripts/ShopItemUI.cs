@@ -65,14 +65,20 @@ public class ShopItemUI : MonoBehaviour
 
     private void BuyItem()
     {
-        // 코인 로직은 생략
-        if (ShopManager.Instance != null)
+        if (CoinManager.Instance.SpendCoin(itemData.itemCost))
         {
-            ShopManager.Instance.equippedHatName = itemData.itemName;
-            // 나머지 로직은 생략
+            PlayerPrefs.SetInt(itemData.itemName, 1);
+            PlayerPrefs.Save();
+
+            if (ShopManager.Instance != null) ShopManager.Instance.equippedHatName = itemData.itemName;
+
+            UpdateButtonState();
+            if (ShopManager.Instance != null)
+            {
+                // 이 함수가 상점의 모든 버튼을 갱신합니다
+                ShopManager.Instance.UpdateAllItemButtons();
+            }
         }
-        UpdateButtonState();
-        if (ShopManager.Instance != null) ShopManager.Instance.UpdateAllItemButtons();
     }
 
     private void EquipItem()
@@ -82,7 +88,10 @@ public class ShopItemUI : MonoBehaviour
             ShopManager.Instance.equippedHatName = itemData.itemName;
         }
         UpdateButtonState();
-        if (ShopManager.Instance != null) ShopManager.Instance.UpdateAllItemButtons();
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.UpdateAllItemButtons();
+        }
     }
 
     private void UnequipItem()
@@ -92,6 +101,9 @@ public class ShopItemUI : MonoBehaviour
             ShopManager.Instance.equippedHatName = "";
         }
         UpdateButtonState();
-        if (ShopManager.Instance != null) ShopManager.Instance.UpdateAllItemButtons();
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.UpdateAllItemButtons();
+        }
     }
 }
