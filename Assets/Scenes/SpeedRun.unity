@@ -1060,6 +1060,70 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &184884216
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 184884218}
+  - component: {fileID: 184884217}
+  - component: {fileID: 184884219}
+  m_Layer: 0
+  m_Name: RecordsSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &184884217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184884216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 652d9fa8ac0289a4997f1e2fa29ee82d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxKeepPerMode: 500
+  defaultShowCount: 20
+--- !u!4 &184884218
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184884216}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &184884219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184884216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21ff9e3763985b44894c4461c3086b7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  modeSource: 2
+  speedSceneKeyword: Speed
+  classicScore: {fileID: 0}
+  speedScore: {fileID: 0}
+  countDown: {fileID: 0}
 --- !u!1 &200656551
 GameObject:
   m_ObjectHideFlags: 0
@@ -8303,6 +8367,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1020055619}
   - component: {fileID: 1020055620}
+  - component: {fileID: 1020055621}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -8342,6 +8407,19 @@ MonoBehaviour:
   baselineY: 0
   PREF_BEST: SPEED_BEST
   PREF_BEST_TIME: SPEED_BEST_TIME
+--- !u!114 &1020055621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1020055617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6d51049ebdf06c4b8d1589081fa7324, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxEntries: 50
 --- !u!1 &1024958526
 GameObject:
   m_ObjectHideFlags: 0
@@ -18681,3 +18759,4 @@ SceneRoots:
   - {fileID: 1316262791}
   - {fileID: 3183830805643909636}
   - {fileID: 1111292117}
+  - {fileID: 184884218}
