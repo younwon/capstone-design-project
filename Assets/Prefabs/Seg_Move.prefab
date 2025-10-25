@@ -53,27 +53,31 @@ MonoBehaviour:
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
+    allowSpring: 0
   - lane: 2
     rowOffset: 2
     yFine: 0
     colorGroup: 0
     paletteIndex: 1
+    allowSpring: 0
   - lane: 7
     rowOffset: 3
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
+    allowSpring: 0
   - lane: 2
     rowOffset: 4
     yFine: 0
     colorGroup: 0
     paletteIndex: 1
+    allowSpring: 0
   sameLaneExtraGap: 0
   laneOffset: 0
   minRowGapForSameColor: 2
   globalMaxStreak: 2
   clearOldChildrenOnBuild: 1
-  halfCellBias: 0
+  halfCellBias: -0.5
   useLogicLaneIndex: 1
   logicHalfBias: 0
   minWorldDXForSameColor: 0.6
