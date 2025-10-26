@@ -62,7 +62,19 @@ public class PlayerController2D : MonoBehaviour
             float inputX = Input.GetAxisRaw("Horizontal");
 
             // [업그레이드 2] 플레이어의 입력 속도(inputX * moveSpeed)에 발판의 속도(platformVelocity.x)를 더해줍니다.
-            rb.velocity = new Vector2((inputX * moveSpeed) + platformVelocity.x, rb.velocity.y);
+            // [핵심 수정] 속도 계산 로직 변경
+            float finalVelX = (inputX * moveSpeed) + platformVelocity.x;
+            float finalVelY = rb.velocity.y; // 일단 현재 중력 속도를 기본값으로
+
+            // 만약 발판이 아래로 내려가고 있다면 (Y속도가 0 미만)
+            // 플레이어의 Y속도를 중력 대신 발판의 Y속도와 강제로 일치시킵니다.
+            if (platformVelocity.y < 0f)
+            {
+                finalVelY = platformVelocity.y;
+            }
+
+            rb.velocity = new Vector2(finalVelX, finalVelY);
+
 
             if (Input.GetButtonDown("Jump")) jumpBufferTimer = jumpBufferTime;
 
@@ -72,7 +84,7 @@ public class PlayerController2D : MonoBehaviour
         }
         else
         {
-            // ✨ 조작이 불가능할 때(예: 넉백)는 0을 넘겨서 멈추도록 합니다.
+            // 조작이 불가능할 때(예: 넉백)는 0을 넘겨서 멈추도록 합니다.
             HandleAnimation(0f);
         }
 
