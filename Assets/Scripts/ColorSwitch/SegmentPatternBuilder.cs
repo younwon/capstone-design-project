@@ -19,6 +19,15 @@ public class SegmentPatternBuilder : MonoBehaviour
     [Header("Palettes (여기에 여러 종류의 팔레트를 등록)")]
     public List<PlatformPalette> palettes = new List<PlatformPalette>();
 
+    [Header("Coin Spawn Settings (Optional)")]
+    [Tooltip("블록 위에 생성할 코인 프리팹")]
+    public GameObject coinPrefab;
+    [Tooltip("코인이 생성될 확률 (%)")]
+    [Range(0f, 100f)] public float coinSpawnChance = 25f; // 기본 25%
+    [Tooltip("블록 위치로부터 코인이 생성될 Y축 오프셋")]
+    public float coinYOffset = 1f;
+    // --- 추가 끝 ---
+
     [Header("패턴 포인트들")]
     public LaneRowFine[] points = new LaneRowFine[] {
         new LaneRowFine{ lane=0, rowOffset=1, yFine=0f, colorGroup=0, allowSpring=true },
@@ -176,6 +185,9 @@ public class SegmentPatternBuilder : MonoBehaviour
             // 생성할 최종 프리팹을 담을 변수
             GameObject prefab = null;
 
+            // --- [이 플래그 변수 추가] ---
+            bool isSpringBlock = false; // 스프링 블록인지 확인하기 위함
+
             // 현재 처리 중인 포인트의 정보를 가져옵니다.
             var currentPoint = points[i];
 
@@ -185,6 +197,7 @@ public class SegmentPatternBuilder : MonoBehaviour
             {
                 // 스프링 블록이 당첨되면 프리팹을 스프링 블록으로 교체!
                 prefab = paletteToUse.springVersionAsset.GetPrefab();
+                isSpringBlock = true; // --- [플래그 설정] ---
             }
             // 2. 가시 블록 확률 다음으로 체크 (스프링이 아닐 경우)
             else if (paletteToUse.spikeVersionPalette != null && Random.Range(0, 100) < paletteToUse.spikeChance)
@@ -204,6 +217,17 @@ public class SegmentPatternBuilder : MonoBehaviour
             {
                 var go = Instantiate(prefab, new Vector3(x, y, 0f), Quaternion.identity, transform);
                 go.name = $"Plat_{pick}_#{i}";
+
+                // 2. [추가] 코인 생성 로직
+                // 코인 프리팹이 있고, 스프링 블록이 아니며, 확률에 당첨되었을 때
+                if (coinPrefab != null && !isSpringBlock && Random.Range(0f, 100f) < coinSpawnChance)
+                {
+                    // 코인 위치 계산 (블록 위치 + Y 오프셋)
+                    Vector3 coinPosition = new Vector3(x, y + coinYOffset, 0f);
+
+                    // 코인을 생성하고 'go.transform'(방금 만든 블록)의 자식으로 설정
+                    Instantiate(coinPrefab, coinPosition, Quaternion.identity, go.transform);
+                }
             }
 
             state.hasLaneHistory[logicLane] = true;
