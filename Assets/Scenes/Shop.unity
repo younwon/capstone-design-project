@@ -432,6 +432,8 @@ MonoBehaviour:
   shopItems:
   - {fileID: 11400000, guid: 58cad505e4ceffc4db63ba9cf7e3215b, type: 2}
   - {fileID: 11400000, guid: 8a2ffdba6faeeb848838aa5f0a235cfb, type: 2}
+  - {fileID: 11400000, guid: ca7868addbaab2c48a60bf9a19d60fb0, type: 2}
+  - {fileID: 11400000, guid: d7285ee47aa57dc48a5f6b7fd866cb0d, type: 2}
 --- !u!4 &420907204
 Transform:
   m_ObjectHideFlags: 0
@@ -1274,6 +1276,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 984424999}
   m_CullTransparentMesh: 1
+--- !u!1 &1384189475
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1384189477}
+  - component: {fileID: 1384189476}
+  m_Layer: 0
+  m_Name: AchievementManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1384189476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384189475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61ef6704e8d494546bbcb3552ef888a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allAchievementIds:
+  - TEST
+--- !u!4 &1384189477
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384189475}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.8933238, y: 2.0800502, z: -0.062394183}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1384610599
 GameObject:
   m_ObjectHideFlags: 0
@@ -2016,3 +2064,4 @@ SceneRoots:
   - {fileID: 1702340848}
   - {fileID: 639013341}
   - {fileID: 2064525347}
+  - {fileID: 1384189477}
