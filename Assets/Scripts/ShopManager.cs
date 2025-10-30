@@ -57,7 +57,7 @@ public class ShopManager : MonoBehaviour
         else if (scene.name == "ColorClimb") // "플레이 씬 이름"을 실제 씬 이름으로 변경
         {
             DeliverEquippedHatData();
-        } 
+        }
     }
 
     private void Start()
@@ -126,5 +126,29 @@ public class ShopManager : MonoBehaviour
             }
         }
         return null;
+    }
+    [ContextMenu("Clear All Purchased Items")]
+    public void ClearAllPurchasedItems()
+    {
+        foreach (ShopItemData itemData in shopItems)
+        {
+            // 각 아이템의 구매 기록을 PlayerPrefs에서 삭제
+            PlayerPrefs.DeleteKey(itemData.itemName);
+        }
+        PlayerPrefs.Save();
+
+        Debug.Log("[ShopManager] 모든 아이템 구매 기록 초기화 완료.");
+
+        // 아이템 상태를 초기화 후, 모든 버튼의 상태를 업데이트
+        equippedHatName = "";
+
+        // PlayerHat이 존재하면 모자를 벗김
+        if (PlayerHat.Instance != null)
+        {
+            PlayerHat.Instance.UnequipHat();
+        }
+
+        // 상점 UI의 모든 버튼 상태를 갱신
+        UpdateAllItemButtons();
     }
 }

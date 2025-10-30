@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SpeedRun.unity
     guid: 04555a89d32d42c4aae2f7eb771fe3e4
+  - enabled: 1
+    path: Assets/Scenes/Shop.unity
+    guid: 36d95a49b66714b42a6923ea53dea27f
   m_configObjects: {}

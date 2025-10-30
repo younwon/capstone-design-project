@@ -14,6 +14,10 @@ public class CountDown : MonoBehaviour
     [Tooltip("기본 제한 시간(초) — 리셋/시작 시 이 값으로 복원됩니다.")]
     [SerializeField] float defaultSeconds = 60f;
 
+    // ▶ 외부에서 읽을 초기 시간/경과 시간 (기존 기능은 그대로 두고 '읽기'만 제공)
+    public float initialTime => Mathf.Max(0f, defaultSeconds);
+    public float ElapsedSeconds => Mathf.Clamp(initialTime - timeRemaining, 0f, initialTime);
+
     [HideInInspector] public float timeRemaining; // 현재 남은 시간(런타임)
     bool countdownStarted = false;   // ‘플레이어가 움직이기 시작했는가’
     bool countdownEnded = false;     // 시간 종료 여부
@@ -63,7 +67,7 @@ public class CountDown : MonoBehaviour
         {
             countdownEnded = true;
 
-            // ★ 여기 추가: 표시 스코어 얼리고 기록 확정
+            // ★ 표시 스코어 얼리고 기록 확정 (스피드런용)
             if (ScoreSystem_Speed.I) ScoreSystem_Speed.I.FreezeScoreAndCommit();
 
             if (player) player.Die("Countdown Ended");

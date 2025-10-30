@@ -96,6 +96,15 @@ public class ScoreSystem_Speed : MonoBehaviour
             // PlayerPrefs.SetFloat(PREF_BEST_TIME, ThisRunTime); // 시간도 저장하려면 주석 해제
             PlayerPrefs.Save();
             IsNewRecord = true;
+
+            if (candidate >= 15)
+            {
+                if (AchievementManager.Instance != null)
+                {
+                    AchievementManager.Instance.UnlockAchievement("TEST");
+                    Debug.Log("업적 달성");
+                }
+            }
         }
     }
 

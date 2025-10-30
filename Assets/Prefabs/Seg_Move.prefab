@@ -47,33 +47,40 @@ MonoBehaviour:
   palettes:
   - {fileID: 11400000, guid: ea8e87659cdd3bb4ab8b30072316fc60, type: 2}
   - {fileID: 11400000, guid: cd24bced6c9db8d4783154468c2188b2, type: 2}
+  coinPrefab: {fileID: 5047054674502725462, guid: 8741e4de972358046bac090a85214423, type: 3}
+  coinSpawnChance: 25
+  coinYOffset: 1
   points:
   - lane: 1
     rowOffset: 1
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
+    allowSpring: 0
   - lane: 2
     rowOffset: 2
     yFine: 0
     colorGroup: 0
     paletteIndex: 1
+    allowSpring: 0
   - lane: 7
     rowOffset: 3
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
+    allowSpring: 0
   - lane: 2
     rowOffset: 4
     yFine: 0
     colorGroup: 0
     paletteIndex: 1
+    allowSpring: 0
   sameLaneExtraGap: 0
   laneOffset: 0
   minRowGapForSameColor: 2
   globalMaxStreak: 2
   clearOldChildrenOnBuild: 1
-  halfCellBias: 0
+  halfCellBias: -0.5
   useLogicLaneIndex: 1
   logicHalfBias: 0
   minWorldDXForSameColor: 0.6

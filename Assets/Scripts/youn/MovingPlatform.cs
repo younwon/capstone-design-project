@@ -4,43 +4,66 @@ using UnityEngine;
 
 public class MovingPlatform : MonoBehaviour
 {
+    // 움직일 방향을 선택할 수 있는 타입을 새로 정의합니다.
+    public enum MoveDirection { Horizontal, Vertical }
+
     [Header("Movement Settings")]
-    [Tooltip("이동할 거리입니다. 생성된 위치를 기준으로 이 값만큼 움직입니다.")]
-    public float moveDistance = 3f;
+    [Tooltip("움직일 방향을 선택하세요.")]
+    public MoveDirection direction = MoveDirection.Horizontal; // 방향 선택 옵션
+
+    [Tooltip("수평(Horizontal)으로 움직일 거리입니다.")]
+    public float moveDistanceX = 4f; // X축 이동 거리
+
+    [Tooltip("수직(Vertical)으로 움직일 거리입니다.")]
+    public float moveDistanceY = 3f; // Y축 이동 거리
+
     public float speed = 2f;
 
-    // 업그레이드된 부분 1: 모든 움직이는 발판이 공유하는 '출생신고 카운터'
-    private static int platformCounter = 0;
+    // [핵심 기능] 이 발판의 현재 속도를 다른 스크립트가 읽어갈 수 있도록 합니다.
+    public Vector2 CurrentVelocity { get; private set; }
 
     private Vector3 startPosition;
-    private bool startsMovingRight; // 이 발판이 오른쪽으로 먼저 움직일지 여부
+    private Vector3 lastPosition;
+    private static int platformCounter = 0;
+    private bool startsMovingMainDirection; // 주 방향으로 먼저 움직일지 여부
 
     void Awake()
     {
-        // Awake는 Start보다 먼저 실행됩니다.
-        // 이 발판이 몇 번째로 생성된 움직이는 발판인지 확인합니다.
-        // 카운터가 짝수(0, 2, 4...)면 오른쪽, 홀수(1, 3, 5...)면 왼쪽으로 출발하도록 정합니다.
-        startsMovingRight = (platformCounter % 2 == 0);
-
-        // 다음 발판을 위해 카운터를 1 증가시킵니다.
+        startsMovingMainDirection = (platformCounter % 2 == 0);
         platformCounter++;
     }
 
     void Start()
     {
         startPosition = transform.position;
+        lastPosition = transform.position;
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        float pingPongValue = Mathf.PingPong(Time.time * speed, moveDistance);
+        // 선택된 방향에 따라 다른 로직을 실행합니다.
+        float distance = (direction == MoveDirection.Horizontal) ? moveDistanceX : moveDistanceY;
 
-        // 왼쪽으로 먼저 움직여야 한다면, 움직임 값을 뒤집어줍니다.
-        if (!startsMovingRight)
+        float pingPongValue = Mathf.PingPong(Time.time * speed, distance);
+        if (!startsMovingMainDirection)
         {
-            pingPongValue = moveDistance - pingPongValue;
+            pingPongValue = distance - pingPongValue;
         }
 
-        transform.position = new Vector3(startPosition.x + pingPongValue, startPosition.y, startPosition.z);
+        Vector3 newPosition;
+        if (direction == MoveDirection.Horizontal)
+        {
+            newPosition = new Vector3(startPosition.x + pingPongValue, startPosition.y, startPosition.z);
+        }
+        else
+        {
+            newPosition = new Vector3(startPosition.x, startPosition.y + pingPongValue, startPosition.z);
+        }
+
+        transform.position = newPosition;
+
+        // [핵심 기능] 이전 프레임 위치와 현재 프레임 위치의 차이를 이용해 '속도'를 계산합니다.
+        CurrentVelocity = (transform.position - lastPosition) / Time.fixedDeltaTime;
+        lastPosition = transform.position;
     }
 }
