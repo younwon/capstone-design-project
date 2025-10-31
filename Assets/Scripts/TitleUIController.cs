@@ -14,6 +14,9 @@ public class TitleUIController : MonoBehaviour
     [SerializeField] Button startCatcher;          // 전체화면 투명 버튼
     [SerializeField] CanvasGroup startCatcherGroup;
 
+    [Header("Extra Buttons")]
+    [SerializeField] Button btnRanking;          // 노란 버튼
+    [SerializeField] GameObject rankingPanel;    // RecordsPanel_Classic (비활성 시작)
 
     [Header("Optional refs for clean reset")]
     [SerializeField] Transform playerStartLocation;
@@ -55,6 +58,10 @@ public class TitleUIController : MonoBehaviour
             startCatcher.onClick.RemoveAllListeners();
             startCatcher.onClick.AddListener(BeginGame);
         }
+
+        if (btnRanking)
+            btnRanking.onClick.AddListener(OpenRankingPanel);
+
     }
 
     void OnEnable()
@@ -274,6 +281,15 @@ public class TitleUIController : MonoBehaviour
         // 숨겨진 차폐물(검은 페이드, 팝업 등)이 남아있다면 끄기
         // (Scene 내에서 사용하는 다른 전면 오브젝트가 있다면 여기서 확실히 Off)
     }
+
+    void OpenRankingPanel()
+    {
+        if (rankingPanel)
+        {
+            rankingPanel.SetActive(true);   // 패널 열기
+        }
+    }
+
 
 
 }
