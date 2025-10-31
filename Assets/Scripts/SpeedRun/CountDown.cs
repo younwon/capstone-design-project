@@ -22,6 +22,9 @@ public class CountDown : MonoBehaviour
     bool countdownStarted = false;   // ‘플레이어가 움직이기 시작했는가’
     bool countdownEnded = false;     // 시간 종료 여부
 
+    // CountDown.cs 안에 아래 1줄만 추가 (필드 이름은 너의 코드 기준)
+    public float InitialSeconds => defaultSeconds;
+
     void Awake()
     {
         // 씬 진입 시 내부 상태 초기화
