@@ -7238,7 +7238,7 @@ SpriteRenderer:
   m_SortingLayerID: 320860559
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: b83ee8b48be0c484594444adff29fa5f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c50adc0fcb00d0745ac92d2c3f177ccb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0
@@ -10440,7 +10440,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7826f0145cf5bc244b743c1b42341321, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deadSprite: {fileID: 21300000, guid: 227219900bf2af340a1a8702479fcc38, type: 3}
+  deadSprite: {fileID: 21300000, guid: 3d08de4d15be11245bc9408ff5c1c3f0, type: 3}
   bounceForce: 7
   gravityOnDeath: 2.2
   delayBeforeUI: 1.5
@@ -10459,7 +10459,7 @@ MonoBehaviour:
   maxHP: 1
   invulnSeconds: 1
   ui: {fileID: 0}
-  hitSprite: {fileID: 21300000, guid: 227219900bf2af340a1a8702479fcc38, type: 3}
+  hitSprite: {fileID: 21300000, guid: 3d08de4d15be11245bc9408ff5c1c3f0, type: 3}
   hitEffectDuration: 0.5
 --- !u!114 &989567304
 MonoBehaviour:
@@ -20585,7 +20585,7 @@ MonoBehaviour:
   tiers:
   - minMeters: 0
     entries:
-    - prefab: {fileID: 1834732117358071206, guid: 62c83312531dcba42af2b62d107de0a5, type: 3}
+    - prefab: {fileID: 6801262862034987100, guid: e9f1375b0c94678468c16e8ba47b8b5d, type: 3}
       weight: 10
     - prefab: {fileID: 2396550318274857513, guid: 35de2fbd47c46dd47b525fb81ef19813, type: 3}
       weight: 90
