@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
   m_Name: TimedPlatform
   m_EditorClassIdentifier: 
-  prefabGreen: {fileID: 6751191763006630506, guid: a85852455a739fd4aa264ffa00195e67, type: 3}
-  prefabYellow: {fileID: 6751191763006630506, guid: a85852455a739fd4aa264ffa00195e67, type: 3}
-  prefabBlue: {fileID: 6751191763006630506, guid: a85852455a739fd4aa264ffa00195e67, type: 3}
-  prefabOrange: {fileID: 6751191763006630506, guid: a85852455a739fd4aa264ffa00195e67, type: 3}
+  prefabGreen: {fileID: 6751191763006630506, guid: 9c9022a274a8d54458e4422281c44e0d, type: 3}
+  prefabYellow: {fileID: 6751191763006630506, guid: 9c9022a274a8d54458e4422281c44e0d, type: 3}
+  prefabBlue: {fileID: 6751191763006630506, guid: 9c9022a274a8d54458e4422281c44e0d, type: 3}
+  prefabOrange: {fileID: 6751191763006630506, guid: 9c9022a274a8d54458e4422281c44e0d, type: 3}
   spikeVersionPalette: {fileID: 0}
   spikeChance: 0
   springVersionAsset: {fileID: 0}
