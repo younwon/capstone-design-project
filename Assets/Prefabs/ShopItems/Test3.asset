@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Test3
   m_EditorClassIdentifier: 
   itemName: Test2
-  itemDescription: Test2
-  itemCost: 4
+  itemDescription: TEST
+  itemCost: 0
   itemIcon: {fileID: 21300000, guid: 3313d367536805d40a7a2b51e9eaf288, type: 3}
   itemPrefab: {fileID: 0}
   playerAccessorySprite: {fileID: 21300000, guid: c24bdce6d10c5bc4c9cdb42f470b4303, type: 3}

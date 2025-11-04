@@ -6,6 +6,7 @@ public class ShopItemUI : MonoBehaviour
 {
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI priceText;
+    public TextMeshProUGUI descriptionText;
     public Image itemImage;
     public Button purchaseButton;
     public TextMeshProUGUI buttonText;
@@ -21,6 +22,7 @@ public class ShopItemUI : MonoBehaviour
         itemData = data;
         nameText.text = itemData.itemName;
         priceText.text = itemData.itemCost.ToString();
+        descriptionText.text = itemData.itemDescription;
         itemImage.sprite = itemData.itemIcon;
         UpdateButtonState();
     }

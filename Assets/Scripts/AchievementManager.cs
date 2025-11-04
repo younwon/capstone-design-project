@@ -1,5 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
+using TMPro;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class AchievementManager : MonoBehaviour
 {
@@ -10,6 +14,14 @@ public class AchievementManager : MonoBehaviour
     private Dictionary<string, bool> achievementStatus = new Dictionary<string, bool>();
     private const string ACHIEVEMENT_PREFS_PREFIX = "ACHIEVEMENT_";
 
+    [Header("알림 UI 설정")]
+    public GameObject notificationPrefab; // 알림 UI 프리팹 (슬롯)
+    public float displayDuration = 3f;  // 알림이 화면에 머무는 시간
+    public Transform notificationParent; // 알림이 표시될 부모 오브젝트 (Canvas)
+
+    private Queue<string> achievementQueue = new Queue<string>();
+    private bool isDisplaying = false;
+
     private void Awake()
     {
         if (Instance == null)
@@ -17,13 +29,33 @@ public class AchievementManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             LoadAchievements(); // 게임 시작 시 저장된 업적 불러오기
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
             Destroy(gameObject);
         }
     }
-
+    private void OnDestroy()
+    {
+        // 구독 해제
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    // 씬이 로드될 때마다 호출되어 Canvas를 새로 찾습니다.
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // "NotificationCanvas"는 실제 씬에 있는 Canvas의 이름이어야 합니다.
+        GameObject canvasObj = GameObject.Find("NotificationCanvas");
+        if (canvasObj != null)
+        {
+            notificationParent = canvasObj.transform;
+            Debug.Log("[AchievementManager] 씬에서 Canvas를 찾았습니다.");
+        }
+        else
+        {
+            Debug.LogError("[AchievementManager] 씬에서 'NotificationCanvas'라는 이름의 Canvas를 찾을 수 없습니다!");
+        }
+    }
     // 특정 업적을 달성 처리하는 함수
     public void UnlockAchievement(string achievementId)
     {
@@ -33,15 +65,86 @@ public class AchievementManager : MonoBehaviour
             SaveAchievement(achievementId);
             Debug.Log($"업적 달성: {achievementId}");
 
-            // 업적 달성 후 상점 UI를 새로고침해야 할 수 있으므로,
-            // 현재 씬이 상점이라면 ShopManager의 버튼 업데이트 함수를 호출
-            if (ShopManager.Instance != null)
+            achievementQueue.Enqueue(achievementId); // 큐에 추가
+            if (!isDisplaying)
             {
-                ShopManager.Instance.UpdateAllItemButtons();
+                StartCoroutine(ProcessQueue()); // 알림 처리 시작
+
+                // 업적 달성 후 상점 UI를 새로고침해야 할 수 있으므로,
+                // 현재 씬이 상점이라면 ShopManager의 버튼 업데이트 함수를 호출
+                if (ShopManager.Instance != null)
+                {
+                    ShopManager.Instance.UpdateAllItemButtons();
+                }
             }
         }
-    }
+        IEnumerator ProcessQueue()
+        {
+            isDisplaying = true;
 
+            // notificationParent가 찾아질 때까지 잠시 대기 (안전장치)
+            while (notificationParent == null)
+            {
+                Debug.LogWarning("[AchievementManager] 알림을 띄울 Canvas를 기다리는 중...");
+                yield return null;
+            }
+
+            while (achievementQueue.Count > 0)
+            {
+                string achievementId = achievementQueue.Dequeue();
+
+                // 이제 부모(notificationParent)가 DontDestroyOnLoad가 아니므로 오류가 발생하지 않습니다.
+                GameObject notification = Instantiate(notificationPrefab, notificationParent);
+
+                TextMeshProUGUI textComponent = notification.GetComponentInChildren<TextMeshProUGUI>();
+                if (textComponent != null)
+                {
+                    textComponent.text = $"YOU GOT!\n'{achievementId}'";
+                }
+
+                Image iconImage = null;
+                Transform iconTransform = notification.transform.Find("ItemIcon");
+                if (iconTransform != null)
+                {
+                    iconImage = iconTransform.GetComponent<Image>();
+                }
+
+                Sprite iconSprite = null;
+
+                // ShopManager가 준비될 때까지 대기
+                if (ShopManager.Instance != null)
+                {
+                    if (ShopManager.Instance.shopItems != null)
+                    {
+                        foreach (var item in ShopManager.Instance.shopItems)
+                        {
+                            if (item.requiredAchievementId == achievementId)
+                            {
+                                iconSprite = item.itemIcon;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (iconImage != null && iconSprite != null)
+                {
+                    iconImage.sprite = iconSprite;
+                    iconImage.gameObject.SetActive(true);
+                }
+                else if (iconImage != null)
+                {
+                    iconImage.gameObject.SetActive(false);
+                }
+
+                yield return new WaitForSeconds(displayDuration);
+                Destroy(notification);
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            isDisplaying = false;
+        }
+    }
     // 특정 업적의 달성 여부를 확인하는 함수
     public bool IsAchievementUnlocked(string achievementId)
     {

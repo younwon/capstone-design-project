@@ -433,7 +433,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 58cad505e4ceffc4db63ba9cf7e3215b, type: 2}
   - {fileID: 11400000, guid: 8a2ffdba6faeeb848838aa5f0a235cfb, type: 2}
   - {fileID: 11400000, guid: ca7868addbaab2c48a60bf9a19d60fb0, type: 2}
-  - {fileID: 11400000, guid: d7285ee47aa57dc48a5f6b7fd866cb0d, type: 2}
+  shopDefaultColor: {r: 0.1, g: 0.2, b: 0.4, a: 1}
+  colorClimbShopColor: {r: 0.41568628, g: 0.6627451, b: 0.9019608, a: 1}
+  speedRunShopColor: {r: 0.93333334, g: 0.7372549, b: 0.5254902, a: 1}
 --- !u!4 &420907204
 Transform:
   m_ObjectHideFlags: 0
@@ -1307,6 +1309,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allAchievementIds:
   - TEST
+  notificationPrefab: {fileID: 1941305624321059604, guid: 75bbdc16e80a7c942b6aef7782fab7c5, type: 3}
+  displayDuration: 3
+  notificationParent: {fileID: 886468763824065536, guid: 75bbdc16e80a7c942b6aef7782fab7c5, type: 3}
 --- !u!4 &1384189477
 Transform:
   m_ObjectHideFlags: 0
@@ -1990,11 +1995,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 10
+    m_Left: 100
     m_Right: 10
     m_Top: 10
     m_Bottom: 10
-  m_ChildAlignment: 1
+  m_ChildAlignment: 3
   m_Spacing: 10
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0

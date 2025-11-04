@@ -229,6 +229,22 @@ public class TitleUIController : MonoBehaviour
 
         string target = gotoSpeedRun ? speedRunScene : colorClimbScene;
 
+        // 씬 전환 전에 현재 씬 이름을 SceneTracker에 저장하는 로직 추가
+        if (SceneTracker.Instance != null)
+        {
+            // 현재 활성화된 씬의 이름을 가져옵니다.
+            string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+
+            // SceneTracker에 이전 씬 이름으로 저장합니다.
+            SceneTracker.Instance.SetPreviousScene(currentSceneName);
+
+            Debug.Log($"[TitleUIController] 이전 씬 저장 완료: {currentSceneName}");
+        }
+        else
+        {
+            Debug.LogError("[TitleUIController] SceneTracker 인스턴스를 찾을 수 없습니다! 메인 씬에 SceneTracker 오브젝트가 있는지 확인하세요.");
+        }
+
         // 다음 씬에서 바로 시작(타이틀 스킵) + 페이드 연출
         FadeRouter.Load(target, skipTitleOnce: false);
     }
