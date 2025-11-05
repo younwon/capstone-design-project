@@ -7380,19 +7380,19 @@ PrefabInstance:
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[0]
       value: 
-      objectReference: {fileID: 21300000, guid: 5e4164f6d61062e4fa08bcbff9c52f12, type: 3}
+      objectReference: {fileID: 21300000, guid: ccbd30a3e1b06dd47bd21913f7188650, type: 3}
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[1]
       value: 
-      objectReference: {fileID: 21300000, guid: a1b8791b0b73f3741ae70a6e8e828f65, type: 3}
+      objectReference: {fileID: 21300000, guid: d47b5baaeaefcd241b05bcbfc8aed0c4, type: 3}
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[2]
       value: 
-      objectReference: {fileID: 21300000, guid: e36e6a837f2a3e948a776eeaa1db725b, type: 3}
+      objectReference: {fileID: 21300000, guid: 6ef83531ac3fbdf469e273f7c5db52eb, type: 3}
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[3]
       value: 
-      objectReference: {fileID: 21300000, guid: 5337d2a0cb8325747ab749d1feeaf6e7, type: 3}
+      objectReference: {fileID: 21300000, guid: 2a117a1549e9958468e3a57fe1516d7b, type: 3}
     - target: {fileID: 4642451870061202807, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -7476,7 +7476,7 @@ PrefabInstance:
     - target: {fileID: 4762722429810380286, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: a1b8791b0b73f3741ae70a6e8e828f65, type: 3}
+      objectReference: {fileID: 21300000, guid: ccbd30a3e1b06dd47bd21913f7188650, type: 3}
     - target: {fileID: 4957426098322313528, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_IsActive
       value: 0

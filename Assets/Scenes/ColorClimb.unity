@@ -7282,12 +7282,12 @@ SpriteRenderer:
   m_SortingLayerID: 320860559
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: c50adc0fcb00d0745ac92d2c3f177ccb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 806e29b5fccced24bba3549c6c394e52, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.28, y: 2.56}
+  m_Size: {x: 1.25, y: 2.03}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -10380,7 +10380,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -50}
+  m_AnchoredPosition: {x: 0, y: -49.99994}
   m_SizeDelta: {x: -120, y: -1100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &987511238
@@ -10484,7 +10484,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7826f0145cf5bc244b743c1b42341321, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deadSprite: {fileID: 21300000, guid: 3d08de4d15be11245bc9408ff5c1c3f0, type: 3}
+  deadSprite: {fileID: 21300000, guid: ddf7f3760dd28ee4d8b1b7bfffdfa228, type: 3}
   bounceForce: 7
   gravityOnDeath: 2.2
   delayBeforeUI: 1.5
@@ -10503,7 +10503,7 @@ MonoBehaviour:
   maxHP: 1
   invulnSeconds: 1
   ui: {fileID: 0}
-  hitSprite: {fileID: 21300000, guid: 3d08de4d15be11245bc9408ff5c1c3f0, type: 3}
+  hitSprite: {fileID: 21300000, guid: ddf7f3760dd28ee4d8b1b7bfffdfa228, type: 3}
   hitEffectDuration: 0.5
 --- !u!114 &989567304
 MonoBehaviour:
@@ -20632,7 +20632,7 @@ MonoBehaviour:
   tiers:
   - minMeters: 0
     entries:
-    - prefab: {fileID: 6801262862034987100, guid: e9f1375b0c94678468c16e8ba47b8b5d, type: 3}
+    - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
       weight: 10
     - prefab: {fileID: 2396550318274857513, guid: 35de2fbd47c46dd47b525fb81ef19813, type: 3}
       weight: 90
@@ -20640,8 +20640,6 @@ MonoBehaviour:
     entries:
     - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
       weight: 70
-    - prefab: {fileID: 1834732117358071206, guid: 62c83312531dcba42af2b62d107de0a5, type: 3}
-      weight: 30
   - minMeters: 60
     entries:
     - prefab: {fileID: 6801262862034987100, guid: e9f1375b0c94678468c16e8ba47b8b5d, type: 3}
