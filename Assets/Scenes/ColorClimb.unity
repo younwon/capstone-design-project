@@ -7202,7 +7202,7 @@ SpriteRenderer:
   m_SortingLayerID: 320860559
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: b83ee8b48be0c484594444adff29fa5f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e928f0f7e894a0d4db73ef9613db2ab7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0
@@ -10307,7 +10307,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7826f0145cf5bc244b743c1b42341321, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deadSprite: {fileID: 21300000, guid: 227219900bf2af340a1a8702479fcc38, type: 3}
+  deadSprite: {fileID: 21300000, guid: b5fc597357f42da4485f9344083a94e7, type: 3}
   bounceForce: 7
   gravityOnDeath: 2.2
   delayBeforeUI: 1.5
@@ -10326,7 +10326,7 @@ MonoBehaviour:
   maxHP: 1
   invulnSeconds: 1
   ui: {fileID: 0}
-  hitSprite: {fileID: 21300000, guid: 227219900bf2af340a1a8702479fcc38, type: 3}
+  hitSprite: {fileID: 21300000, guid: b5fc597357f42da4485f9344083a94e7, type: 3}
   hitEffectDuration: 0.5
 --- !u!114 &989567304
 MonoBehaviour:
@@ -24994,19 +24994,19 @@ PrefabInstance:
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[0]
       value: 
-      objectReference: {fileID: 21300000, guid: 5e4164f6d61062e4fa08bcbff9c52f12, type: 3}
+      objectReference: {fileID: 21300000, guid: a5b8c7a9cec4f974b85efafb43a70f35, type: 3}
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[1]
       value: 
-      objectReference: {fileID: 21300000, guid: a1b8791b0b73f3741ae70a6e8e828f65, type: 3}
+      objectReference: {fileID: 21300000, guid: 60a698cb4a4a34541b9e1fb3519e30a4, type: 3}
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[2]
       value: 
-      objectReference: {fileID: 21300000, guid: e36e6a837f2a3e948a776eeaa1db725b, type: 3}
+      objectReference: {fileID: 21300000, guid: 4c8919df398364a42a8795589c50afda, type: 3}
     - target: {fileID: 4141128288629061504, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: logoSprites.Array.data[3]
       value: 
-      objectReference: {fileID: 21300000, guid: 5337d2a0cb8325747ab749d1feeaf6e7, type: 3}
+      objectReference: {fileID: 21300000, guid: 523d469cb0b57d24993acbb3ab22d23e, type: 3}
     - target: {fileID: 4642451870061202807, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -25090,7 +25090,7 @@ PrefabInstance:
     - target: {fileID: 4762722429810380286, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: a1b8791b0b73f3741ae70a6e8e828f65, type: 3}
+      objectReference: {fileID: 21300000, guid: a5b8c7a9cec4f974b85efafb43a70f35, type: 3}
     - target: {fileID: 4779901375654651313, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 1
