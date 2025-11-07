@@ -13,6 +13,12 @@ public class ShopManager : MonoBehaviour
     public GameObject shopItemUIPrefab;
     public List<ShopItemData> shopItems;
 
+    [Header("카메라 설정")]
+    public Color shopDefaultColor = new Color(0.1f, 0.2f, 0.4f, 1f);
+    public Color colorClimbShopColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+    public Color speedRunShopColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+    private Camera mainCamera;
+
     private List<ShopItemUI> allShopItemUIs = new List<ShopItemUI>();
 
     private void Awake()
@@ -22,6 +28,11 @@ public class ShopManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
+
+            if (Camera.main != null)
+            {
+                mainCamera = Camera.main;
+            }
         }
         else
         {
@@ -36,10 +47,40 @@ public class ShopManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 상점 씬으로 돌아왔을 때 UI를 다시 로드
-        if (scene.name == "Shop") // "상점 씬 이름"을 실제 씬 이름으로 변경
+        if (mainCamera == null && Camera.main != null)
         {
-            // ★★★ 새로운 씬에서 shopContentParent를 다시 찾습니다. ★★★
+            mainCamera = Camera.main;
+        }
+
+        // 상점 씬으로 돌아왔을 때 UI를 다시 로드
+        if (scene.name == "Shop")
+        {
+            string cameFromScene = "";
+
+            // SceneTracker에서 이전 씬 이름을 가져와 확인합니다.
+            if (SceneTracker.Instance != null)
+            {
+                cameFromScene = SceneTracker.Instance.PreviousSceneName;
+                Debug.Log($"상점 씬에 진입했습니다. 이전 씬은 {cameFromScene}입니다.");
+            }
+            if (mainCamera != null)
+            {
+                Color targetColor = shopDefaultColor; // 기본색으로 시작
+
+                if (cameFromScene == "SpeedRun")
+                {
+                    targetColor = speedRunShopColor;
+                }
+                else if (cameFromScene == "ColorClimb")
+                {
+                    targetColor = colorClimbShopColor;
+                }
+
+                // 선택된 색상으로 카메라 배경색을 변경
+                mainCamera.backgroundColor = targetColor;
+            }
+
+            // ... (기존 상점 초기화 로직: shopContentParent 찾기, ClearAllShopItems 등) ...
             GameObject contentObject = GameObject.Find("Content");
             if (contentObject != null)
             {
@@ -49,14 +90,11 @@ public class ShopManager : MonoBehaviour
                 UpdateAllItemButtons();
             }
         }
-        // 플레이 씬으로 돌아갔을 때 데이터 전달
-        else if (scene.name == "SpeedRun") // "플레이 씬 이름"을 실제 씬 이름으로 변경
+        // 플레이 씬으로 돌아갔을 때 배경색 복구 로직 (참고용)
+        else if (scene.name == "SpeedRun" || scene.name == "ColorClimb")
         {
             DeliverEquippedHatData();
-        }
-        else if (scene.name == "ColorClimb") // "플레이 씬 이름"을 실제 씬 이름으로 변경
-        {
-            DeliverEquippedHatData();
+
         }
     }
 

@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Test2
   m_EditorClassIdentifier: 
   itemName: Test2
-  itemDescription: Test2
+  itemDescription: 
   itemCost: 4
-  itemIcon: {fileID: 21300000, guid: 3313d367536805d40a7a2b51e9eaf288, type: 3}
+  itemIcon: {fileID: 21300000, guid: 14247f149b54c5449b85a1d13cb24415, type: 3}
   itemPrefab: {fileID: 0}
   playerAccessorySprite: {fileID: 21300000, guid: 80d03eaa318d0fc46a517a14d999b227, type: 3}
+  requiredAchievementId: 
