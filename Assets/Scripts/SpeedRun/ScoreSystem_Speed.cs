@@ -29,6 +29,8 @@ public class ScoreSystem_Speed : MonoBehaviour
     bool _frozen;       // 표시 스코어를 동결했는가
     int _frozenScore;  // 동결된 표시 값
 
+    bool hasUnlocked = false;
+
     void Awake()
     {
         I = this;
@@ -62,6 +64,16 @@ public class ScoreSystem_Speed : MonoBehaviour
         float curMeters = Mathf.Max(0f, (player.position.y - baselineY) * metersPerUnit);
         int cur = Mathf.FloorToInt(curMeters);
         if (cur != CurrentScore) CurrentScore = cur;
+
+        if (curMeters >= 5 && !hasUnlocked)
+        {
+            if (AchievementManager.Instance != null)
+            {
+                hasUnlocked = true;
+                AchievementManager.Instance.UnlockAchievement("TEST");
+                Debug.Log("업적 달성");
+            }
+        }
 
         // ✅ 추가됨 : F9 키로 최고기록 초기화
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -104,15 +116,6 @@ public class ScoreSystem_Speed : MonoBehaviour
             // PlayerPrefs.SetFloat(PREF_BEST_TIME, ThisRunTime); // 시간도 저장하려면 주석 해제
             PlayerPrefs.Save();
             IsNewRecord = true;
-
-            if (candidate >= 15)
-            {
-                if (AchievementManager.Instance != null)
-                {
-                    AchievementManager.Instance.UnlockAchievement("TEST");
-                    Debug.Log("업적 달성");
-                }
-            }
         }
     }
 
