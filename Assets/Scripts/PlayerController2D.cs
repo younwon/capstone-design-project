@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿// /Scripts/Player/PlayerController2D.cs
+// 통합본: 이동/점프(코요테/버퍼) + 움직이는 발판 속도 반영 + 점프 SFX + 컨트롤 잠금 API
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,22 +8,28 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class PlayerController2D : MonoBehaviour
 {
-    // --- 기존 변수들은 그대로 ---
+    [Header("External")]
     public LavaRiser lavaRiser;
-    bool _hasStarted = false;
-    [SerializeField] float startInputThreshold = 0.01f;
+
+    [Header("Control")]
+    public bool canControl = true;
+
     [Header("Movement")]
     public float moveSpeed = 5f;
     public float jumpForce = 12f;
-    [Header("Ground Check (2-Point)")]
-    public float footSeparation = 0.2f;
+
+    [Header("Ground Check")]
     public float groundProbeOffset = 0.02f;
-    public float groundProbeRadius = 0.1f;
+    public float groundProbeRadius = 0.4f;
+
     [Header("Jump Assist")]
     public bool enableCoyote = true;
     public float coyoteTime = 0.1f;
     public bool enableJumpBuffer = true;
     public float jumpBufferTime = 0.1f;
+
+    [Header("SFX")]
+    public AudioClip jumpClip;
 
     Rigidbody2D rb;
     Collider2D col;
@@ -31,20 +39,18 @@ public class PlayerController2D : MonoBehaviour
     bool isGrounded;
     float coyoteTimer;
     float jumpBufferTimer;
+    bool _hasStarted = false;
 
-    // [추가된 변수]
-    private bool canControl = true;
-
-    // [업그레이드 1] 밟고 있는 발판의 속도를 저장할 변수
-    private Vector2 platformVelocity;
+    Vector2 platformVelocity = Vector2.zero;
+    MovingPlatform currentPlatform = null;
 
     void Awake()
     {
-        // ... Awake 함수는 변경 없음 ...
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();
         anim = GetComponentInChildren<Animator>();
         sr = GetComponentInChildren<SpriteRenderer>();
+
         rb.gravityScale = Mathf.Max(1f, rb.gravityScale);
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -52,107 +58,71 @@ public class PlayerController2D : MonoBehaviour
 
     void Update()
     {
-        //  [수정] canControl이 true일 때만 입력 처리
-        if (canControl)
-        {
-            if (PlayerStartedMoving() && lavaRiser != null)
-            {
-                lavaRiser.StartLava();
-            }
-            float inputX = Input.GetAxisRaw("Horizontal");
+        if (PlayerStartedMoving() && lavaRiser != null) lavaRiser.StartLava();
 
-            // [업그레이드 2] 플레이어의 입력 속도(inputX * moveSpeed)에 발판의 속도(platformVelocity.x)를 더해줍니다.
-            // [핵심 수정] 속도 계산 로직 변경
-            float finalVelX = (inputX * moveSpeed) + platformVelocity.x;
-            float finalVelY = rb.velocity.y; // 일단 현재 중력 속도를 기본값으로
-
-            // 만약 발판이 아래로 내려가고 있다면 (Y속도가 0 미만)
-            // 플레이어의 Y속도를 중력 대신 발판의 Y속도와 강제로 일치시킵니다.
-            if (platformVelocity.y < 0f)
-            {
-                finalVelY = platformVelocity.y;
-            }
-
-            rb.velocity = new Vector2(finalVelX, finalVelY);
-
-
-            if (Input.GetButtonDown("Jump")) jumpBufferTimer = jumpBufferTime;
-
-            //  [수정] HandleAnimation에 inputX 전달
-            HandleAnimation(inputX);
-
-        }
-        else
-        {
-            // 조작이 불가능할 때(예: 넉백)는 0을 넘겨서 멈추도록 합니다.
-            HandleAnimation(0f);
-        }
-
-        // 시각적 처리는 canControl과 무관하게 처리
-        HandleSpriteFacing();
-
-        // HandleAnimation(); // 이 줄은 위로 이동했으므로 삭제하거나 주석 처리합니다.
-
+        if (Input.GetButtonDown("Jump")) jumpBufferTimer = jumpBufferTime;
         if (enableJumpBuffer && jumpBufferTimer > 0f) jumpBufferTimer -= Time.unscaledDeltaTime;
-        if (!isGrounded && coyoteTimer > 0f) coyoteTimer -= Time.unscaledDeltaTime;
-        TryConsumeJump();
-    }
+        if (!isGrounded && enableCoyote && coyoteTimer > 0f) coyoteTimer -= Time.unscaledDeltaTime;
 
-    void HandleSpriteFacing()
-    {
-        if (sr && Mathf.Abs(rb.velocity.x) > 0.1f)
-        {
-            sr.flipX = rb.velocity.x < 0f;
-        }
-    }
+        float inputX = canControl ? Input.GetAxisRaw("Horizontal") : 0f;
+        HandleSpriteFacing(inputX);
 
-    void HandleAnimation(float inputX)
-    {
         if (anim)
         {
-            // [핵심 수정] rb.velocity.x 대신 inputX의 절대값을 확인합니다.
             bool movingOnGround = Mathf.Abs(inputX) > 0.01f && isGrounded;
-
             anim.SetBool("IsMoving", movingOnGround);
             anim.SetBool("IsGrounded", isGrounded);
         }
+
+        TryConsumeJump(inputX);
     }
 
-    // [추가된 함수] 외부에서 호출하여 잠시 조작을 막는 기능
-    public void DisableControlsFor(float duration)
-    {
-        StartCoroutine(DisableControlsRoutine(duration));
-    }
-
-    private IEnumerator DisableControlsRoutine(float duration)
-    {
-        canControl = false;
-        yield return new WaitForSeconds(duration);
-        canControl = true;
-    }
-
-    // --- 나머지 함수들은 그대로 ---
     void FixedUpdate()
     {
-        bool groundedNow = false;
+        UpdateGroundAndPlatformVelocity();
 
-        // ✨ [업그레이드 3] 땅을 확인하기 전에, 발판 속도를 매번 0으로 초기화합니다.
-        platformVelocity = Vector2.zero;
+        float inputX = canControl ? Input.GetAxisRaw("Horizontal") : 0f;
 
+        float finalVelX = inputX * moveSpeed;
+        float finalVelY = rb.velocity.y;
+
+        if (isGrounded) finalVelX += platformVelocity.x;
+        if (isGrounded && platformVelocity.y < 0f) finalVelY = platformVelocity.y;
+
+        rb.velocity = new Vector2(finalVelX, finalVelY);
+    }
+
+    void UpdateGroundAndPlatformVelocity()
+    {
         var b = col.bounds;
-        Vector3 bottomCenter = b.center + Vector3.down * (b.extents.y + groundProbeOffset);
-        Vector3 footLeft = bottomCenter + Vector3.left * footSeparation;
-        Vector3 footRight = bottomCenter + Vector3.right * footSeparation;
-        if (IsGroundedOn(Physics2D.OverlapCircleAll(footLeft, groundProbeRadius)))
+        Vector3 foot = b.center + Vector3.down * (b.extents.y + groundProbeOffset);
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(foot, groundProbeRadius);
+
+        bool groundedNow = false;
+        platformVelocity = Vector2.zero;
+        currentPlatform = null;
+
+        for (int i = 0; i < hits.Length; i++)
         {
-            groundedNow = true;
+            var h = hits[i];
+            if (!h || h.attachedRigidbody == rb) continue;
+            if (h.CompareTag("Ground") || h.CompareTag("Block"))
+            {
+                groundedNow = true;
+                var mp = h.GetComponent<MovingPlatform>() ?? h.GetComponentInParent<MovingPlatform>();
+                if (mp)
+                {
+                    currentPlatform = mp;
+                    platformVelocity = mp.CurrentVelocity;
+                }
+                break;
+            }
         }
-        else if (IsGroundedOn(Physics2D.OverlapCircleAll(footRight, groundProbeRadius)))
-        {
-            groundedNow = true;
-        }
+
         if (groundedNow)
         {
+            if (!isGrounded) coyoteTimer = coyoteTime;
             isGrounded = true;
             coyoteTimer = coyoteTime;
         }
@@ -160,43 +130,37 @@ public class PlayerController2D : MonoBehaviour
         {
             if (isGrounded) coyoteTimer = coyoteTime;
             isGrounded = false;
+            currentPlatform = null;
+            platformVelocity = Vector2.zero;
         }
     }
 
-    bool IsGroundedOn(Collider2D[] hits)
-    {
-        for (int i = 0; i < hits.Length; i++)
-        {
-            var h = hits[i];
-            if (!h || h.attachedRigidbody == rb) continue;
-            if (h.CompareTag("Ground") || h.CompareTag("Block"))
-            {
-                // ✨ [업그레이드 4] 땅을 찾으면, 그 땅이 움직이는 발판인지 확인합니다.
-                MovingPlatform movingPlatform = h.GetComponent<MovingPlatform>();
-                if (movingPlatform != null)
-                {
-                    // 발판이 맞다면, 발판의 현재 속도를 저장합니다.
-                    platformVelocity = movingPlatform.CurrentVelocity;
-                }
-                return true; // 땅을 찾았으므로 true 반환
-            }
-        }
-        return false;
-    }
-
-    void TryConsumeJump()
+    void TryConsumeJump(float inputX)
     {
         bool canJumpNow = isGrounded || (enableCoyote && coyoteTimer > 0f);
-        bool wantsJump = (canControl && Input.GetButtonDown("Jump")) || (enableJumpBuffer && jumpBufferTimer > 0f);
-        if (canJumpNow && wantsJump)
+        bool wantsJump = Input.GetButtonDown("Jump") || (enableJumpBuffer && jumpBufferTimer > 0f);
+        if (!(canControl && wantsJump && canJumpNow)) return;
+
+        jumpBufferTimer = 0f;
+        coyoteTimer = 0f;
+
+        rb.velocity = new Vector2(rb.velocity.x, 0f);
+        rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+
+        if (anim) anim.SetTrigger("Jump");
+        isGrounded = false;
+
+        if (AudioManager.I && jumpClip)
         {
-            jumpBufferTimer = 0f;
-            coyoteTimer = 0f;
-            rb.velocity = new Vector2(rb.velocity.x, 0f);
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            if (anim) anim.SetTrigger("Jump");
-            isGrounded = false;
+            float pitch = Random.Range(0.95f, 1.05f);
+            AudioManager.I.PlaySFX(jumpClip, pitch);
         }
+    }
+
+    void HandleSpriteFacing(float inputX)
+    {
+        if (!sr) return;
+        if (Mathf.Abs(inputX) > 0.01f) sr.flipX = inputX < 0f;
     }
 
     bool PlayerStartedMoving()
@@ -204,9 +168,28 @@ public class PlayerController2D : MonoBehaviour
         if (_hasStarted) return false;
         float x = Input.GetAxisRaw("Horizontal");
         bool jumpPressed = Input.GetButtonDown("Jump");
-        bool started = Mathf.Abs(x) > startInputThreshold || jumpPressed || Mathf.Abs(rb.velocity.x) > 0.01f;
+        bool started = Mathf.Abs(x) > 0.01f || jumpPressed || Mathf.Abs(rb.velocity.x) > 0.01f;
         if (started) _hasStarted = true;
         return started;
+    }
+
+    // 외력/피해 등으로 일정 시간 입력 잠금
+    Coroutine _disableCo;
+    public void DisableControlsFor(float seconds, bool zeroHorizontal = true)
+    {
+        if (_disableCo != null) StopCoroutine(_disableCo);
+        _disableCo = StartCoroutine(CoDisableControls(seconds, zeroHorizontal));
+    }
+    IEnumerator CoDisableControls(float seconds, bool zeroHorizontal)
+    {
+        canControl = false;
+        if (zeroHorizontal)
+        {
+            var v = rb.velocity; v.x = 0f; rb.velocity = v;
+        }
+        float t = 0f;
+        while (t < seconds) { t += Time.deltaTime; yield return null; }
+        canControl = true; _disableCo = null;
     }
 
 #if UNITY_EDITOR
@@ -215,12 +198,9 @@ public class PlayerController2D : MonoBehaviour
         var c = GetComponent<Collider2D>();
         if (!c) return;
         var b = c.bounds;
-        Vector3 bottomCenter = b.center + Vector3.down * (b.extents.y + groundProbeOffset);
-        Vector3 footLeft = bottomCenter + Vector3.left * footSeparation;
-        Vector3 footRight = bottomCenter + Vector3.right * footSeparation;
+        Vector3 foot = b.center + Vector3.down * (b.extents.y + groundProbeOffset);
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(footLeft, groundProbeRadius);
-        Gizmos.DrawWireSphere(footRight, groundProbeRadius);
+        Gizmos.DrawWireSphere(foot, groundProbeRadius);
     }
 #endif
 }

@@ -1,53 +1,106 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+// Assets/Scripts/ColorSwitch/ColorActivationManager.cs
 using System;
+using UnityEngine;
 
 public class ColorActivationManager : MonoBehaviour
 {
-    public static ColorActivationManager I;
+    public static ColorActivationManager I { get; private set; }
 
-    // ½ÃÀÛ ±âº»»ö (¿øÇÏ¸é Green ±×´ë·Î)
-    public BlockColor ActiveColor { get; private set; } = BlockColor.Green;
+    [Serializable] public class ColorToggle { public string name; public bool isActive; public Color color; }
 
-    // »öÀÌ ¹Ù²ğ ¶§ ¾Ë¸² ÀÌº¥Æ® (³ªÁß¿¡ ÇÃ·§ÆûÀÌ ÀÌ°É ±¸µ¶)
+    [Header("Initial")]
+    [SerializeField] private BlockColor initialActive = BlockColor.Green;
+
+    [Header("Key Order (Q/W/E/R)")]
+    [SerializeField]
+    private BlockColor[] keyOrder = new[] {
+        BlockColor.Green, BlockColor.Yellow, BlockColor.Blue, BlockColor.Orange
+    };
+
+    [Header("SFX")]
+    [Tooltip("ìƒ‰ ì „í™˜ ì„±ê³µ ì‹œ ì¬ìƒ")]
+    public AudioClip sfxActivate;
+    [Tooltip("ê°™ì€ ìƒ‰ì„ ë‹¤ì‹œ ëˆŒëŸ¬ë„ ì†Œë¦¬ë¥¼ ë‚¼ì§€")]
+    public bool playOnSameColor = false;
+    [Tooltip("ì—°íƒ€ì‹œ ì†Œë¦¬ ìŠ¤íŒ¸ ë°©ì§€(ì´ˆ)")]
+    [Range(0f, 0.3f)] public float minSfxInterval = 0.08f;
+    float _sfxTimer = 0f;
+
+    [Header("Optional UI mirror")]
+    public ColorToggle[] colors;
+
+    public BlockColor ActiveColor { get; private set; }
     public event Action<BlockColor> OnColorChanged;
 
-    [Header("Switch")]
-    [Tooltip("¿¬Å¸ ¹æÁö¿ë Äğ´Ù¿î(ÃÊ). ³Ê¹« ³·Ãß¸é ³­ÀÌµµ ±Ş»ó½Â")]
-    [SerializeField] float switchCooldown = 0.12f;
-    float _cd;
+    [Header("Debug")]
+    public bool logEvents = false;
 
     void Awake()
     {
-        I = this;   // ¾îµğ¼­µç ColorActivationManager.I ·Î Á¢±Ù °¡´É
+        if (I && I != this) { Destroy(gameObject); return; }
+        I = this;
+    }
+    void OnDestroy() { if (I == this) I = null; }
+
+    void Start()
+    {
+        SetActiveColor(initialActive, force: true, playSfx: false);
     }
 
     void Update()
     {
-        if (_cd > 0f) { _cd -= Time.deltaTime; return; }
+        _sfxTimer += Time.unscaledDeltaTime;
 
-        // ¼ıÀÚÅ° 1~4
-        if (Input.GetKeyDown(KeyCode.Alpha1)) Set(BlockColor.Green);
-        else if (Input.GetKeyDown(KeyCode.Alpha2)) Set(BlockColor.Yellow);
-        else if (Input.GetKeyDown(KeyCode.Alpha3)) Set(BlockColor.Blue);
-        else if (Input.GetKeyDown(KeyCode.Alpha4)) Set(BlockColor.Orange);
-
-        // º¸Á¶Å° Q W E R (¼±ÅÃ»çÇ×: ¼Õ°¡¶ô ÆíÇÑ Å°)
-        if (Input.GetKeyDown(KeyCode.Q)) Set(BlockColor.Green);
-        else if (Input.GetKeyDown(KeyCode.W)) Set(BlockColor.Yellow);
-        else if (Input.GetKeyDown(KeyCode.E)) Set(BlockColor.Blue);
-        else if (Input.GetKeyDown(KeyCode.R)) Set(BlockColor.Orange);
+        if (Input.GetKeyDown(KeyCode.Q)) SetActiveByIndex(0);
+        if (Input.GetKeyDown(KeyCode.W)) SetActiveByIndex(1);
+        if (Input.GetKeyDown(KeyCode.E)) SetActiveByIndex(2);
+        if (Input.GetKeyDown(KeyCode.R)) SetActiveByIndex(3);
     }
 
-    public void Set(BlockColor c)
+    public void SetActiveByIndex(int index)
     {
-        if (ActiveColor == c) return;
-        ActiveColor = c;
-        _cd = switchCooldown;
-        OnColorChanged?.Invoke(c);  // ±¸µ¶ÀÚµé¿¡°Ô ¾Ë¸²
-        // ³ªÁß¿¡ µğ¹ö±× ·Î±×°¡ ÇÊ¿äÇÏ¸é ¾Æ·¡ ÁÖ¼® ÇØÁ¦
-        Debug.Log($"ActiveColor -> {c}");
+        if (keyOrder == null || index < 0 || index >= keyOrder.Length) return;
+        var target = keyOrder[index];
+        bool isSame = target.Equals(ActiveColor);
+        bool shouldPlay = playOnSameColor || !isSame;
+        SetActiveColor(target, force: playOnSameColor && isSame, playSfx: shouldPlay);
+    }
+
+    public void SetActiveColor(BlockColor color, bool force = false, bool playSfx = true)
+    {
+        bool changed = !color.Equals(ActiveColor);
+        if (!force && !changed) { TryPlayActivateSfx(); return; }
+
+        ActiveColor = color;
+        SyncColorTogglesArray(color);
+
+        if (logEvents) Debug.Log($"[ColorActivation] Active = {ActiveColor}");
+
+        OnColorChanged?.Invoke(ActiveColor);
+        if (playSfx) TryPlayActivateSfx();
+    }
+
+    void TryPlayActivateSfx()
+    {
+        if (sfxActivate == null || AudioManager.I == null) return;
+        if (_sfxTimer < minSfxInterval) return;
+        _sfxTimer = 0f;
+        AudioManager.I.PlaySFX(sfxActivate);
+    }
+
+    void SyncColorTogglesArray(BlockColor active)
+    {
+        if (colors == null || colors.Length == 0) return;
+        for (int i = 0; i < colors.Length; i++)
+        {
+            if (i < keyOrder.Length) colors[i].isActive = (keyOrder[i] == active);
+        }
+    }
+
+    [ContextMenu("Test Play SFX")]
+    void TestPlaySfx()
+    {
+        if (AudioManager.I && sfxActivate) AudioManager.I.PlaySFX(sfxActivate);
+        else Debug.LogWarning("[ColorActivation] AudioManager ë˜ëŠ” sfxActivateê°€ ë¹„ì—ˆìŠµë‹ˆë‹¤.");
     }
 }
-
