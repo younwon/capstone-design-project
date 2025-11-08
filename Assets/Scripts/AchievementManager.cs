@@ -1,162 +1,208 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
+using TMPro;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class AchievementManager : MonoBehaviour
 {
-    private static AchievementManager _instance;
-    public static AchievementManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                // ¾À¿¡¼­ ÀÎ½ºÅÏ½º¸¦ Ã£½À´Ï´Ù.
-                _instance = FindObjectOfType<AchievementManager>();
+    public static AchievementManager Instance;
 
-                if (_instance == null)
-                {
-                    Debug.LogError("[AchievementManager] ¾À¿¡ AchievementManager°¡ ¾ø½À´Ï´Ù!");
-                }
-            }
-            return _instance;
-        }
-    }
-    // ÀÌ ¾÷Àû °ü¸®ÀÚ°¡ ¾Ë°í ÀÖ¾î¾ß ÇÒ ¸ğµç ¾÷Àû ID ¸ñ·Ï
+    [Header("Achievement IDs")]
     public List<string> allAchievementIds = new List<string>();
 
-    // ¾ÆÀÌÄÜ °Ë»öÀ» À§ÇØ ÀÌ ¸Å´ÏÀú°¡ Á÷Á¢ ¾ÆÀÌÅÛ DB¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÕ´Ï´Ù.
-    [Header("¾ÆÀÌÅÛ µ¥ÀÌÅÍº£ÀÌ½º")]
-    public List<ShopItemData> allShopItems;
-
-    // ¾À¿¡ ÀÖ´Â UIÀÇ ÂüÁ¶¸¦ ÀúÀåÇÒ º¯¼ö
-    private AchievementNotificationUI notificationUI;
-
-    // ¾÷Àû ´Ş¼º »óÅÂ (¸Ş¸ğ¸®)
-    private Dictionary<string, bool> achievementStatus = new Dictionary<string, bool>();
+    // ì—…ì  ë‹¬ì„± ìƒíƒœ
+    private readonly Dictionary<string, bool> achievementStatus = new Dictionary<string, bool>();
     private const string ACHIEVEMENT_PREFS_PREFIX = "ACHIEVEMENT_";
 
-    private void Awake()
+    [Header("Notification (Prefab mode)")]
+    public GameObject notificationPrefab;      // í”„ë¦¬íŒ¹ ì•Œë¦¼ ë°©ì‹
+    public Transform notificationParent;       // ì•Œë¦¼ ë¶€ëª¨(Canvas)
+    public float displayDuration = 3f;         // í‘œì‹œ ì‹œê°„
+
+    [Header("Notification (Inline UI mode)")]
+    [Tooltip("AchievementNotificationUI ì»´í¬ë„ŒíŠ¸ë¥¼ ì§ì ‘ ë“±ë¡í•˜ë©´, í”„ë¦¬íŒ¹ ëŒ€ì‹  ì´ UIë¡œ í‘œì‹œí•©ë‹ˆë‹¤.")]
+    public AchievementNotificationUI inlineUI; // ë“±ë¡ì‹ ì•Œë¦¼ UI(ì˜µì…˜)
+
+    private readonly Queue<string> achievementQueue = new Queue<string>();
+    private bool isDisplaying = false;
+
+    void Awake()
     {
-        // ½Ì±ÛÅæ Áßº¹ ¹æÁö ·ÎÁ÷ (Instance ´ë½Å _instance »ç¿ë)
-        if (_instance == null)
+        if (Instance == null)
         {
-            _instance = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
             LoadAchievements();
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
-        else if (_instance != this)
+        else
         {
             Destroy(gameObject);
         }
     }
 
-    // ¾À¿¡ ÀÖ´Â AchievementNotificationUI°¡ ½º½º·Î¸¦ µî·ÏÇÏ´Â ÇÔ¼ö
-    public void RegisterNotificationUI(AchievementNotificationUI ui)
+    void OnDestroy()
     {
-        notificationUI = ui;
-        Debug.Log("[AchievementManager] ¾Ë¸² UI°¡ ¼º°øÀûÀ¸·Î µî·ÏµÇ¾ú½À´Ï´Ù.");
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // ¾÷Àû ´Ş¼º ½Ã È£ÃâµÇ´Â ¸ŞÀÎ ÇÔ¼ö
+    // ì”¬ ë¡œë“œ ì‹œ, í”„ë¦¬íŒ¹ ëª¨ë“œì—ì„œ ì“¸ ë¶€ëª¨ Canvas ìë™ íšë“
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (notificationParent == null) // ì´ë¯¸ ë‹¤ë¥¸ ì”¬ì—ì„œ ì„¤ì •ë¼ ìˆìœ¼ë©´ ìœ ì§€
+        {
+            GameObject canvasObj = GameObject.Find("NotificationCanvas");
+            if (canvasObj != null)
+            {
+                notificationParent = canvasObj.transform;
+                Debug.Log("[AchievementManager] Found NotificationCanvas.");
+            }
+            else
+            {
+                Debug.LogWarning("[AchievementManager] 'NotificationCanvas' not found in scene.");
+            }
+        }
+    }
+
+    // [ADD] AchievementNotificationUIê°€ ìì‹ ì„ ë“±ë¡í•  ë•Œ í˜¸ì¶œ
+    public void RegisterNotificationUI(AchievementNotificationUI ui)
+    {
+        inlineUI = ui;
+        if (inlineUI && inlineUI.gameObject.activeSelf)
+            inlineUI.gameObject.SetActive(false); // ì‹œì‘ ì‹œ ìˆ¨ê¹€
+        Debug.Log("[AchievementManager] Notification UI registered.");
+    }
+
+    // ì—…ì  í•´ì œ ì—¬ë¶€ ì¡°íšŒ(ì¡°ê±´ ID ë¹„ì—ˆìœ¼ë©´ true)
+    public bool IsAchievementUnlocked(string achievementId)
+    {
+        if (string.IsNullOrEmpty(achievementId)) return true;
+        return achievementStatus.ContainsKey(achievementId) && achievementStatus[achievementId];
+    }
+
+    // ì—…ì  ë‹¬ì„± ì²˜ë¦¬
     public void UnlockAchievement(string achievementId)
     {
-        // ÀÌ¹Ì ´Ş¼ºÇß´Ù¸é Áßº¹ ½ÇÇà ¹æÁö
         if (IsAchievementUnlocked(achievementId)) return;
 
         achievementStatus[achievementId] = true;
         SaveAchievement(achievementId);
-        Debug.Log($"¾÷Àû ´Ş¼º: {achievementId}");
+        Debug.Log($"[Achievement] Unlocked: {achievementId}");
 
-        // --- ¾Ë¸² UI È£Ãâ ·ÎÁ÷ ---
+        achievementQueue.Enqueue(achievementId);
+        if (!isDisplaying) StartCoroutine(ProcessQueue());
 
-        // 1. ÅØ½ºÆ® ÁØºñ
-        string notificationText = $"YOU GOT!\n'{achievementId}'";
+        // ìƒì  ë²„íŠ¼ ìƒˆë¡œ ê³ ì¹¨(ìˆì„ ë•Œ)
+        if (ShopManager.Instance != null)
+            ShopManager.Instance.UpdateAllItemButtons();
 
-        // 2. ¾ÆÀÌÄÜ °Ë»ö
-        Sprite iconSprite = null;
-        if (allShopItems != null)
+        // ë¡œì»¬ í•¨ìˆ˜: í ì²˜ë¦¬ ì½”ë£¨í‹´
+        IEnumerator ProcessQueue()
         {
-            foreach (var item in allShopItems)
+            isDisplaying = true;
+
+            // í‘œì‹œ ì¤€ë¹„ê°€ ë  ë•Œê¹Œì§€ ëŒ€ê¸°
+            while (inlineUI == null && notificationParent == null && notificationPrefab == null)
             {
-                if (item.requiredAchievementId == achievementId)
+                Debug.LogWarning("[AchievementManager] Waiting for UI (inlineUI or notificationParent/prefab)...");
+                yield return null;
+            }
+
+            while (achievementQueue.Count > 0)
+            {
+                string id = achievementQueue.Dequeue();
+
+                // ì•„ì´ì½˜(ì„ íƒ) íƒìƒ‰: ShopManagerì—ì„œ í•´ë‹¹ ì—…ì ì— ì—°ê²°ëœ ì•„ì´í…œ ì•„ì´ì½˜ì„ ì°¾ì•„ë³¸ë‹¤
+                Sprite iconSprite = null;
+                if (ShopManager.Instance != null && ShopManager.Instance.shopItems != null)
                 {
-                    iconSprite = item.itemIcon;
-                    break;
+                    foreach (var item in ShopManager.Instance.shopItems)
+                    {
+                        if (item != null && item.requiredAchievementId == id)
+                        {
+                            iconSprite = item.itemIcon;
+                            break;
+                        }
+                    }
+                }
+
+                // 1) Inline UIê°€ ë“±ë¡ë˜ì–´ ìˆìœ¼ë©´ ê·¸ê²ƒìœ¼ë¡œ í‘œì‹œ
+                if (inlineUI != null)
+                {
+                    inlineUI.Show($"YOU GOT!\n'{id}'", iconSprite);
+                    yield return new WaitForSeconds(displayDuration);
+                }
+                // 2) í”„ë¦¬íŒ¹ ëª¨ë“œë¡œ í‘œì‹œ
+                else if (notificationPrefab != null && notificationParent != null)
+                {
+                    GameObject go = Instantiate(notificationPrefab, notificationParent);
+
+                    // í…ìŠ¤íŠ¸
+                    var text = go.GetComponentInChildren<TextMeshProUGUI>();
+                    if (text) text.text = $"YOU GOT!\n'{id}'";
+
+                    // ì•„ì´ì½˜
+                    Image iconImage = null;
+                    var t = go.transform.Find("ItemIcon");
+                    if (t) iconImage = t.GetComponent<Image>();
+
+                    if (iconImage != null)
+                    {
+                        if (iconSprite != null)
+                        {
+                            iconImage.sprite = iconSprite;
+                            iconImage.gameObject.SetActive(true);
+                        }
+                        else iconImage.gameObject.SetActive(false);
+                    }
+
+                    yield return new WaitForSeconds(displayDuration);
+                    Destroy(go);
+                    yield return new WaitForSeconds(0.2f);
+                }
+                else
+                {
+                    Debug.LogWarning($"[AchievementManager] No UI to display achievement '{id}'.");
                 }
             }
-        }
 
-        // 3. UI ¶ç¿ì±â
-        if (notificationUI != null)
-        {
-            // µî·ÏµÈ UIÀÇ Show ÇÔ¼ö¸¦ È£Ãâ
-            notificationUI.Show(notificationText, iconSprite);
-        }
-        else
-        {
-            Debug.LogError("[AchievementManager] ¾Ë¸² UI°¡ µî·ÏµÇÁö ¾Ê¾Ò½À´Ï´Ù! ¾À¿¡ AchievementNotificationUI°¡ ÀÖ´ÂÁö È®ÀÎÇÏ¼¼¿ä.");
-        }
-
-        // --- ¾Ë¸² ·ÎÁ÷ ³¡ ---
-
-        // »óÁ¡ UI °»½Å (»óÁ¡ÀÌ ¿­·ÁÀÖÀ» °æ¿ì¸¦ ´ëºñ)
-        if (ShopManager.Instance != null)
-        {
-            ShopManager.Instance.UpdateAllItemButtons();
+            isDisplaying = false;
         }
     }
 
-    // ¾÷Àû ´Ş¼º ¿©ºÎ È®ÀÎ
-    public bool IsAchievementUnlocked(string achievementId)
-    {
-        if (string.IsNullOrEmpty(achievementId))
-        {
-            return true; // ID°¡ ¾øÀ¸¸é Ç×»ó ÇØ±İ »óÅÂ
-        }
-        return achievementStatus.ContainsKey(achievementId) && achievementStatus[achievementId];
-    }
-
-    // ¾÷Àû ÀúÀå
-    private void SaveAchievement(string achievementId)
+    // ì €ì¥/ë¡œë“œ
+    void SaveAchievement(string achievementId)
     {
         PlayerPrefs.SetInt(ACHIEVEMENT_PREFS_PREFIX + achievementId, 1);
         PlayerPrefs.Save();
     }
 
-    // °ÔÀÓ ½ÃÀÛ ½Ã ¾÷Àû ·Îµå
-    private void LoadAchievements()
+    void LoadAchievements()
     {
+        // í•„ìš” ì‹œ allAchievementIdsë¥¼ ëŒë©° PlayerPrefs ê°’ì„ ì±„ìš°ëŠ” ë¡œì§ë¡œ í™•ì¥ ê°€ëŠ¥
+        // ì—¬ê¸°ì„œëŠ” ê°„ë‹¨íˆ ì‹œì‘ ìƒíƒœë¥¼ ì´ˆê¸°í™”ë§Œ í•©ë‹ˆë‹¤.
         achievementStatus.Clear();
-        foreach (string id in allAchievementIds)
+        foreach (var id in allAchievementIds)
         {
             if (PlayerPrefs.GetInt(ACHIEVEMENT_PREFS_PREFIX + id, 0) == 1)
-            {
                 achievementStatus[id] = true;
-            }
-            else
-            {
-                achievementStatus[id] = false;
-            }
         }
     }
 
-    // ¾÷Àû ÃÊ±âÈ­ (µğ¹ö±×¿ë)
-    [ContextMenu("¸ğµç ¾÷Àû ÃÊ±âÈ­ (PlayerPrefs)")]
+    [ContextMenu("ëª¨ë“  ì—…ì  ì´ˆê¸°í™”")]
     public void ClearAllAchievements()
     {
         foreach (string id in allAchievementIds)
-        {
             PlayerPrefs.DeleteKey(ACHIEVEMENT_PREFS_PREFIX + id);
-        }
-        PlayerPrefs.Save();
-        achievementStatus.Clear();
-        LoadAchievements(); // µñ¼Å³Ê¸®µµ ÃÊ±âÈ­
 
-        Debug.Log("[AchievementManager] ¸ğµç ¾÷Àû ±â·ÏÀÌ ÃÊ±âÈ­µÇ¾ú½À´Ï´Ù.");
+        achievementStatus.Clear();
+        PlayerPrefs.Save();
+
+        Debug.Log("[AchievementManager] Cleared all achievements.");
 
         if (ShopManager.Instance != null)
-        {
             ShopManager.Instance.UpdateAllItemButtons();
-        }
     }
 }
