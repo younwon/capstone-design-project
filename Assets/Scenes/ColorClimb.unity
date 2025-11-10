@@ -1774,8 +1774,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2bff04919e68fd448b5ec339ee01bbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioMixer: {fileID: 0}
+  bgmGroup: {fileID: 0}
+  sfxGroup: {fileID: 0}
   bgmSource: {fileID: 1967757399}
   sfxSource: {fileID: 1161912272}
+  masterVolume: 1
+  bgmVolume: 1
+  sfxVolume: 1
+  dontDestroyOnLoad: 1
+  defaultFadeTime: 1.5
 --- !u!114 &186261358 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2211249653672438648, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
@@ -5743,7 +5751,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cae1548bec163ae4f87392d31bc699b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchCooldown: 0.12
+  initialActive: 0
+  keyOrder: 00000000010000000200000003000000
+  sfxActivate: {fileID: 0}
+  playOnSameColor: 0
+  minSfxInterval: 0.08
+  colors: []
+  logEvents: 0
 --- !u!4 &568753243
 Transform:
   m_ObjectHideFlags: 0
@@ -7371,12 +7385,12 @@ SpriteRenderer:
   m_SortingLayerID: 320860559
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: e928f0f7e894a0d4db73ef9613db2ab7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 806e29b5fccced24bba3549c6c394e52, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.28, y: 2.56}
+  m_Size: {x: 0.96153843, y: 1.5615385}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -7926,6 +7940,9 @@ MonoBehaviour:
   flashOverlay: {fileID: 1164386329}
   sfxSource: {fileID: 0}
   sfxNewRecord: {fileID: 0}
+  sfxTick: {fileID: 0}
+  sfxConfirm: {fileID: 0}
+  tickInterval: 0.05
   flashMaxAlpha: 0.309
   flashDuration: 0.6
   countThisDuration: 1.2
@@ -7936,8 +7953,6 @@ MonoBehaviour:
   uiDelay: 0.7
   hideWhenShown:
   - {fileID: 1221762531}
-  score: {fileID: 0}
-  speedScore: {fileID: 0}
 --- !u!114 &775965581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10476,10 +10491,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7826f0145cf5bc244b743c1b42341321, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deadSprite: {fileID: 21300000, guid: b5fc597357f42da4485f9344083a94e7, type: 3}
+  deadSprite: {fileID: 21300000, guid: ddf7f3760dd28ee4d8b1b7bfffdfa228, type: 3}
   bounceForce: 7
   gravityOnDeath: 2.2
   delayBeforeUI: 1.5
+  deathClip: {fileID: 0}
+  fadeAllOnDeath: 1
+  fadeTimeOnDeath: 1.5
 --- !u!114 &989567303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10495,7 +10513,7 @@ MonoBehaviour:
   maxHP: 1
   invulnSeconds: 1
   ui: {fileID: 0}
-  hitSprite: {fileID: 21300000, guid: b5fc597357f42da4485f9344083a94e7, type: 3}
+  hitSprite: {fileID: 21300000, guid: ddf7f3760dd28ee4d8b1b7bfffdfa228, type: 3}
   hitEffectDuration: 0.5
 --- !u!114 &989567304
 MonoBehaviour:
@@ -10510,16 +10528,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lavaRiser: {fileID: 0}
-  startInputThreshold: 0.01
+  canControl: 1
   moveSpeed: 5
   jumpForce: 11
-  footSeparation: 0.2
   groundProbeOffset: 0.02
   groundProbeRadius: 0.1
   enableCoyote: 1
   coyoteTime: 0.1
   enableJumpBuffer: 1
   jumpBufferTime: 0.1
+  jumpClip: {fileID: 0}
 --- !u!61 &989567305
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -11018,7 +11036,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allAchievementIds:
   - TEST
-  allShopItems: []
+  notificationPrefab: {fileID: 0}
+  notificationParent: {fileID: 0}
+  displayDuration: 3
+  inlineUI: {fileID: 0}
 --- !u!4 &1052193871
 Transform:
   m_ObjectHideFlags: 0
@@ -14267,8 +14288,16 @@ MonoBehaviour:
   startBelow: -0.3
   fullAt: 0.85
   maxAlpha: 0.115
-  fadeSpeed: 8
+  visualFadeSpeed: 8
   shakeAtFull: 0.22
+  lavaBoilLoop: {fileID: 0}
+  audioLerpSpeed: 10
+  audioLead: 0.18
+  minPitch: 0.92
+  maxPitch: 1.1
+  audibleEnter: 0.02
+  audibleExit: 0
+  endFadeOutTime: 1.5
 --- !u!1 &1266550973
 GameObject:
   m_ObjectHideFlags: 0
