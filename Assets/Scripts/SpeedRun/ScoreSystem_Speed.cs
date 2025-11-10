@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class ScoreSystem_Speed : MonoBehaviour
 {
@@ -7,27 +7,31 @@ public class ScoreSystem_Speed : MonoBehaviour
     [Header("Setup")]
     public Transform player;           // Player Transform
     public float metersPerUnit = 1f;   // 1 unit = 1 m
-    public float baselineY = 0f;       // y=0ÀÌ 0m¸é 0
+    public float baselineY = 0f;       // y=0ì´ 0më©´ 0
 
     [Header("Prefs Keys")]
-    [SerializeField] string PREF_BEST = "SPEED_BEST";    // ½ºÇÇµå·± Àü¿ë Å°
-    [SerializeField] string PREF_BEST_TIME = "SPEED_BEST_TIME"; // (¿øÇÏ¸é ½Ã°£µµ ±â·Ï)
+    [SerializeField] string PREF_BEST = "SPEED_BEST";           // ìŠ¤í”¼ë“œëŸ° ì „ìš© í‚¤
+    [SerializeField] string PREF_BEST_TIME = "SPEED_BEST_TIME"; // (ì›í•˜ë©´ ì‹œê°„ë„ ê¸°ë¡)
 
-    // ¡°ÇöÀç ³ôÀÌ¡±°¡ °ğ Á¡¼ö
-    public int CurrentScore { get; private set; }   // ½Ç½Ã°£ ÇöÀç ³ôÀÌ(³»ºÎ)
-    public int BestEverScore { get; private set; }  // ÃÖ°í ±â·Ï(¿µ±¸)
-    public float ThisRunTime { get; private set; }  // ÀÌ¹ø ÆÇ °æ°ú ½Ã°£(¼±ÅÃ)
+    // â€œí˜„ì¬ ë†’ì´â€ê°€ ê³§ ì ìˆ˜
+    public int CurrentScore { get; private set; }  // ì‹¤ì‹œê°„ í˜„ì¬ ë†’ì´(ë‚´ë¶€)
+    public int BestEverScore { get; private set; }  // ìµœê³  ê¸°ë¡(ì˜êµ¬)
+    public float ThisRunTime { get; private set; }  // ì´ë²ˆ íŒ ê²½ê³¼ ì‹œê°„(ì„ íƒ)
 
-    // UI¿ë Ç¥½Ã °ª(ÇÁ¸®ÁîµÇ¸é ÀÌ °ªÀ» °íÁ¤ Ç¥±â)
+    // UIìš© í‘œì‹œ ê°’(í”„ë¦¬ì¦ˆë˜ë©´ ì´ ê°’ì„ ê³ ì • í‘œê¸°)
     public int DisplayScore => _frozen ? _frozenScore : CurrentScore;
 
     public bool IsNewRecord { get; private set; }
 
-    // ³»ºÎ
+    // ë‚´ë¶€
     float _runTimer;
-    bool _ended;        // °ÔÀÓ¿À¹ö È®Á¤
-    bool _frozen;       // Ç¥½Ã ½ºÄÚ¾î¸¦ µ¿°áÇß´Â°¡
-    int _frozenScore;  // µ¿°áµÈ Ç¥½Ã °ª
+    bool _ended;         // ê²Œì„ì˜¤ë²„ í™•ì •
+    bool _frozen;        // í‘œì‹œ ìŠ¤ì½”ì–´ ë™ê²°?
+    int _frozenScore;   // ë™ê²°ëœ í‘œì‹œ ê°’
+
+    // ì—…ì : 15m ë„˜ìœ¼ë©´ ì¦‰ì‹œ 1íšŒ ë°œë™ (ìŠ¤íŒ¸ ë°©ì§€)
+    const int ACHIEVE_HEIGHT = 15;
+    bool _achievementTriggered;
 
     void Awake()
     {
@@ -39,7 +43,7 @@ public class ScoreSystem_Speed : MonoBehaviour
         }
 
         BestEverScore = PlayerPrefs.GetInt(PREF_BEST, 0);
-        // ½Ã°£À» ±â·ÏÇÏ°í ½ÍÀ¸¸é ¾Æ·¡µµ »ç¿ë
+        // ì‹œê°„ì„ ê¸°ë¡í•˜ê³  ì‹¶ìœ¼ë©´ ì•„ë˜ë„ ì‚¬ìš©
         // BestEverTime  = PlayerPrefs.GetFloat(PREF_BEST_TIME, 0f);
 
         CurrentScore = 0;
@@ -49,45 +53,52 @@ public class ScoreSystem_Speed : MonoBehaviour
         _frozenScore = 0;
         IsNewRecord = false;
         ThisRunTime = 0f;
+
+        _achievementTriggered = false;
     }
 
     void Update()
     {
         if (!player || _ended) return;
 
-        // ÁøÇà Áß ½Ã°£ ´©Àû
+        // ì§„í–‰ ì¤‘ ì‹œê°„ ëˆ„ì 
         _runTimer += Time.deltaTime;
 
-        // ÇöÀç ³ôÀÌ °è»ê(Ç×»ó °»½ÅµÇÁö¸¸, È­¸é Ç¥½Ã´Â DisplayScore¸¦ ¾²¸é ¾ÈÀü)
+        // í˜„ì¬ ë†’ì´ ê³„ì‚°(í•­ìƒ ê°±ì‹ ë˜ì§€ë§Œ, í™”ë©´ í‘œì‹œëŠ” DisplayScore ì‚¬ìš© ê¶Œì¥)
         float curMeters = Mathf.Max(0f, (player.position.y - baselineY) * metersPerUnit);
         int cur = Mathf.FloorToInt(curMeters);
         if (cur != CurrentScore) CurrentScore = cur;
 
-        if (curMeters >= 15)
+        // âœ… 1ë²ˆ ì½”ë“œì˜ ì—…ì  ë¡œì§ ìœ ì§€í•˜ë˜ "í•œ ë²ˆë§Œ" íŠ¸ë¦¬ê±°
+        if (!_achievementTriggered && curMeters >= ACHIEVE_HEIGHT)
         {
             if (AchievementManager.Instance != null)
             {
                 AchievementManager.Instance.UnlockAchievement("TEST");
-                Debug.Log("¾÷Àû ´Ş¼º");
+                Debug.Log("ì—…ì  ë‹¬ì„±");
             }
+            _achievementTriggered = true;
         }
+
+        // âœ… 2ë²ˆ ì½”ë“œì˜ F9 ì´ˆê¸°í™” ë‹¨ì¶•í‚¤ ìœ ì§€(ì—ë””í„°/ê°œë°œë¹Œë“œë§Œ)
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            ClearBestEver();
+        }
+#endif
     }
 
-    /// <summary>
-    /// Ä«¿îÆ®´Ù¿îÀÌ 0ÀÌ µÇ´Â ¡®±× ¼ø°£¡¯ È£Ãâ. Ç¥½Ã ½ºÄÚ¾î¸¦ ¾ó¸®°í ±â·Ï È®Á¤.
-    /// </summary>
+    /// <summary>ì¹´ìš´íŠ¸ë‹¤ìš´ì´ 0ì´ ë˜ëŠ” ê·¸ ìˆœê°„ í˜¸ì¶œ. í‘œì‹œ ìŠ¤ì½”ì–´ ì–¼ë¦¬ê³  ê¸°ë¡ í™•ì •.</summary>
     public void FreezeScoreAndCommit()
     {
         if (_frozen) return;
         _frozenScore = CurrentScore;
         _frozen = true;
-
         CommitBestCurrent();
     }
 
-    /// <summary>
-    /// ÀÌ¹ø ÆÇ ±â·ÏÀ» È®Á¤(ÇöÀç Ç¥½Ã°ª ±âÁØ). ½ºÇÇµå·±Àº ¡°ÇöÀç ³ôÀÌ¡±°¡ ±â·Ï.
-    /// </summary>
+    /// <summary>ì´ë²ˆ íŒ ê¸°ë¡ì„ í™•ì •(í˜„ì¬ í‘œì‹œê°’ ê¸°ì¤€).</summary>
     public void CommitBestCurrent()
     {
         if (_ended) return;
@@ -96,21 +107,19 @@ public class ScoreSystem_Speed : MonoBehaviour
         ThisRunTime = _runTimer;
         IsNewRecord = false;
 
-        int candidate = DisplayScore; // ÇÁ¸®ÁîµÅ ÀÖÀ¸¸é °íÁ¤°ª
+        int candidate = DisplayScore; // í”„ë¦¬ì¦ˆë¼ ìˆìœ¼ë©´ ê³ ì •ê°’
 
         if (candidate > BestEverScore)
         {
             BestEverScore = candidate;
             PlayerPrefs.SetInt(PREF_BEST, BestEverScore);
-            // PlayerPrefs.SetFloat(PREF_BEST_TIME, ThisRunTime); // ½Ã°£µµ ÀúÀåÇÏ·Á¸é ÁÖ¼® ÇØÁ¦
+            // PlayerPrefs.SetFloat(PREF_BEST_TIME, ThisRunTime); // ì‹œê°„ë„ ì €ì¥í•˜ë ¤ë©´ ì£¼ì„ í•´ì œ
             PlayerPrefs.Save();
             IsNewRecord = true;
         }
     }
 
-    /// <summary>
-    /// »õ ÆÇ ½ÃÀÛ ½Ã È£Ãâ(¾À ¸®·Îµå ¶Ç´Â ¼öµ¿ ¸®¼Â).
-    /// </summary>
+    /// <summary>ìƒˆ íŒ ì‹œì‘ ì‹œ í˜¸ì¶œ(ì”¬ ë¦¬ë¡œë“œ ë˜ëŠ” ìˆ˜ë™ ë¦¬ì…‹).</summary>
     public void ResetRun()
     {
         CurrentScore = 0;
@@ -120,6 +129,19 @@ public class ScoreSystem_Speed : MonoBehaviour
         _runTimer = 0f;
         ThisRunTime = 0f;
         IsNewRecord = false;
+
+        _achievementTriggered = false;
+    }
+
+    // âœ… ìµœê³ ê¸°ë¡ ì´ˆê¸°í™”(2ë²ˆ ì½”ë“œ ìœ ì§€)
+    [ContextMenu("Reset BestEver (PlayerPrefs)")]
+    public void ClearBestEver()
+    {
+        BestEverScore = 0;
+        PlayerPrefs.DeleteKey(PREF_BEST);
+        PlayerPrefs.DeleteKey(PREF_BEST_TIME);
+        PlayerPrefs.Save();
+        Debug.Log("[ScoreSystem_Speed] ìµœê³ ê¸°ë¡ ì´ˆê¸°í™” ì™„ë£Œ");
     }
 }
 
