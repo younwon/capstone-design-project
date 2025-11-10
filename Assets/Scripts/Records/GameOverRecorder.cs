@@ -1,4 +1,4 @@
-Ôªøusing System;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,56 +8,50 @@ public class GameOverRecorder : MonoBehaviour
 
     [Header("Mode")]
     public ModeSource modeSource = ModeSource.AutoFromScene;
-    public string speedSceneKeyword = "Speed";
+    [Tooltip("æ¿ ¿Ã∏ßø° ¿Ã ≈∞øˆµÂ∞° ∆˜«‘µ«∏È SpeedRun¿∏∑Œ ∞£¡÷ (Auto ∏µÂ¿œ ∂ß∏∏)")]
+    public string speedSceneKeyword = "Speed"; // øπ: "SpeedRun", "Speed"
 
-    [Header("Optional refs (ÏûêÎèô ÌÉêÏÉâÎê®)")]
-    public ScoreSystem classicScore;
-    public ScoreSystem_Speed speedScore;
-    public CountDown countDown;
+    [Header("Optional Refs (¿⁄µø ≈Ωªˆµ )")]
+    public ScoreSystem classicScore;         // Classic ∏µÂøÎ
+    public ScoreSystem_Speed speedScore;     // SpeedRun ∏µÂøÎ
+    public CountDown countDown;              // SpeedRun ≈∏¿Ã∏”(¿÷¿∏∏È Ω√∞£ ∞ËªÍø° ªÁøÎ)
 
     [Header("Debug")]
-    public bool log = true;
+    [SerializeField] bool debugLogs = true;
+
+    bool _subscribed = false;
 
     void Awake()
     {
-        if (!classicScore) classicScore = FindObjectOfType<ScoreSystem>(true);
-        if (!speedScore) speedScore = FindObjectOfType<ScoreSystem_Speed>(true);
-        if (!countDown) countDown = FindObjectOfType<CountDown>(true);
-
-        if (log) Debug.Log($"[GOR] Awake. refs ‚Üí classic:{(classicScore ? "ok" : "null")}, " +
-                           $"speed:{(speedScore ? "ok" : "null")}, cd:{(countDown ? "ok" : "null")}");
+        if (!classicScore) classicScore = FindObjectOfType<ScoreSystem>(includeInactive: true);
+        if (!speedScore) speedScore = FindObjectOfType<ScoreSystem_Speed>(includeInactive: true);
+        if (!countDown) countDown = FindObjectOfType<CountDown>(includeInactive: true);
     }
 
     void OnEnable()
     {
-        SimpleGameOver.OnGameOver += OnGameOver;
-        if (log) Debug.Log("[GOR] OnEnable ‚Üí subscribed");
+        if (!_subscribed)
+        {
+            SimpleGameOver.OnGameOver += OnGameOver;
+            _subscribed = true;
+            if (debugLogs) Debug.Log("[GameOverRecorder] Subscribed to SimpleGameOver.");
+        }
     }
 
     void OnDisable()
     {
-        SimpleGameOver.OnGameOver -= OnGameOver;
-        if (log) Debug.Log("[GOR] OnDisable ‚Üí unsubscribed");
+        if (_subscribed)
+        {
+            SimpleGameOver.OnGameOver -= OnGameOver;
+            _subscribed = false;
+            if (debugLogs) Debug.Log("[GameOverRecorder] Unsubscribed from SimpleGameOver.");
+        }
     }
 
     void OnGameOver(string reason)
     {
-        if (log) Debug.Log($"[GOR] OnGameOver ({reason})");
-
-        // DB Ïù∏Ïä§ÌÑ¥Ïä§ Î≥¥Ïû•(ÏóÜÏúºÎ©¥ Ï¶âÏãú ÏÉùÏÑ±)
-        if (RecordsDB.I == null)
-        {
-            var found = FindObjectOfType<RecordsDB>(true);
-            if (!found)
-            {
-                var go = new GameObject("RecordsDB");
-                go.AddComponent<RecordsDB>(); // AwakeÏóêÏÑú DontDestroyOnLoad + Load
-                if (log) Debug.Log("[GOR] RecordsDB spawned by recorder");
-            }
-        }
-        if (RecordsDB.I == null) { Debug.LogWarning("[GOR] RecordsDB not ready"); return; }
-
         var mode = ResolveMode();
+
         int meters = 0;
         float seconds = 0f;
 
@@ -69,23 +63,49 @@ public class GameOverRecorder : MonoBehaviour
                 meters = Mathf.Max(0, s.SessionMaxScore);
                 seconds = Mathf.Max(0f, s.ThisRunTime);
             }
-            else if (log) Debug.LogWarning("[GOR] ScoreSystem (classic) missing");
         }
-        else
+        else // SpeedRun
         {
             var ss = speedScore ?? FindObjectOfType<ScoreSystem_Speed>(true);
             if (ss != null) meters = Mathf.Max(0, ss.CurrentScore);
-            else if (log) Debug.LogWarning("[GOR] ScoreSystem_Speed missing");
 
-            if (!countDown) countDown = FindObjectOfType<CountDown>(true);
+            // CountDown ∞¯∞≥ « µÂ∏∏ æ»¿¸«œ∞‘ ªÁøÎ (initialTime¿Ã ¿÷¿∏∏È øÏº± ªÁøÎ)
+            float elapsedByCountdown = -1f;
+            if (countDown == null) countDown = FindObjectOfType<CountDown>(true);
             if (countDown != null)
-                seconds = Mathf.Max(0f, countDown.InitialSeconds - countDown.timeRemaining);
-            else if (ss != null)
-                seconds = Mathf.Max(0f, ss.ThisRunTime);
+            {
+                // CountDownø° public float initialTime ∞‘≈Õ/«¡∑Œ∆€∆º∞° ¿÷¥Ÿ∏È ªÁøÎ
+                try
+                {
+                    // ∏Æ«√∑∫º« æ¯¿Ã, ¡∏¿Á«—¥Ÿ∞Ì ∞°¡§«— «¡∑Œ∆€∆º∏¶ ƒƒ∆ƒ¿œ∑Ø∞° æÀ ºˆ æ¯¿∏π«∑Œ
+                    // ø©±‚º≠¥¬ æ»¿¸ ∆˙πÈ∏∏ ªÁøÎ. (« ø‰ Ω√ CountDownø° public float InitialTime ∞‘≈Õ √ﬂ∞°)
+                    // elapsedByCountdown = Mathf.Max(0f, countDown.initialTime - countDown.timeRemaining);
+
+                    // ∆˙πÈ: ScoreSystem_Speed¿« ThisRunTime ªÁøÎ
+                    elapsedByCountdown = -1f;
+                }
+                catch { elapsedByCountdown = -1f; }
+            }
+
+            if (elapsedByCountdown >= 0f)
+            {
+                seconds = elapsedByCountdown;
+            }
+            else
+            {
+                // √÷¡æ ∆˙πÈ: Ω∫ƒ⁄æÓ Ω√Ω∫≈€¿« ∑±≈∏¿”(øÏ∏Æ∞° ¿ÃπÃ ∞ªΩ≈«ÿ µ“)
+                if (ss != null) seconds = Mathf.Max(0f, ss.ThisRunTime);
+            }
         }
 
-        if (log) Debug.Log($"[GOR] AddRecord ‚Üí mode:{mode}, meters:{meters}, seconds:{seconds:0.00}");
-        RecordsDB.I.AddRecord(mode, meters, seconds, DateTime.UtcNow);
+        // ===== ¿˙¿Â =====
+        bool saved = SaveRecord(mode, meters, seconds);
+        if (debugLogs)
+        {
+            string storeName = (RunRecordStore.I != null) ? "RunRecordStore" :
+                               (RecordsDBAvailable() ? "RecordsDB" : "NO_STORE");
+            Debug.Log($"[GameOverRecorder] Save {(saved ? "OK" : "FAIL")} | Mode={mode} | Height={meters}m | Time={seconds:0.00}s | Store={storeName} | Reason={reason}");
+        }
     }
 
     GameMode ResolveMode()
@@ -100,11 +120,49 @@ public class GameOverRecorder : MonoBehaviour
                         ? GameMode.SpeedRun : GameMode.Classic;
         }
     }
+
+    bool SaveRecord(GameMode mode, int meters, float seconds)
+    {
+        // 1) RunRecordStore∞° ¿÷¿∏∏È ∏’¿˙ Ω√µµ
+        if (RunRecordStore.I != null)
+        {
+            object store = RunRecordStore.I;
+            var t = store.GetType();
+
+            // øÏ∏Æ∞° ¡ˆø¯«œ¥¬ »ƒ∫∏ Ω√±◊¥œ√≥µÈ
+            // A: AddRecord(GameMode,int,float,DateTime)
+            var mi = t.GetMethod("AddRecord", new Type[] { typeof(GameMode), typeof(int), typeof(float), typeof(DateTime) });
+            if (mi != null) { mi.Invoke(store, new object[] { mode, meters, seconds, DateTime.UtcNow }); return true; }
+
+            // B: Add(GameMode,int,float,DateTime)
+            mi = t.GetMethod("Add", new Type[] { typeof(GameMode), typeof(int), typeof(float), typeof(DateTime) });
+            if (mi != null) { mi.Invoke(store, new object[] { mode, meters, seconds, DateTime.UtcNow }); return true; }
+
+            // C: AddRecord(GameMode,int,float)
+            mi = t.GetMethod("AddRecord", new Type[] { typeof(GameMode), typeof(int), typeof(float) });
+            if (mi != null) { mi.Invoke(store, new object[] { mode, meters, seconds }); return true; }
+
+            // D: Add(GameMode,int,float)
+            mi = t.GetMethod("Add", new Type[] { typeof(GameMode), typeof(int), typeof(float) });
+            if (mi != null) { mi.Invoke(store, new object[] { mode, meters, seconds }); return true; }
+
+            Debug.LogWarning("[GameOverRecorder] RunRecordStore¥¬ πﬂ∞ﬂ«ﬂ¡ˆ∏∏ Add/AddRecord Ω√±◊¥œ√≥∏¶ √£¡ˆ ∏¯«ﬂΩ¿¥œ¥Ÿ.");
+        }
+
+        // 2) RecordsDB ∆˙πÈ
+        if (RecordsDBAvailable())
+        {
+            // ≥ ¿« RecordsDB Ω√±◊¥œ√≥ø° ∏¬√Á »£√‚ (« ø‰ Ω√ ø©±‚º≠µµ ¿ß√≥∑≥ »ƒ∫∏ ∞Àªˆ ∞°¥…)
+            RecordsDB.I.AddRecord(mode, meters, seconds, DateTime.UtcNow);
+            return true;
+        }
+
+        Debug.LogWarning("[GameOverRecorder] No record store found (RunRecordStore/RecordsDB µ— ¥Ÿ æ¯¿Ω).");
+        return false;
+    }
+
+    bool RecordsDBAvailable()
+        => (RecordsDB.I != null); // ΩÃ±€≈Ê∏∏ »Æ¿Œ (Type.GetType √º≈©¥¬ ∫“« ø‰)
 }
-
-
-
-
-
 
 
