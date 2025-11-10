@@ -4,31 +4,33 @@ using UnityEngine;
 public class CountDown : MonoBehaviour
 {
     [Header("Refs")]
-    public TextMeshProUGUI timerText;
-    public PlayerDeath player;
+    public TextMeshProUGUI timerText;                 // 상단 타이머 텍스트
+    public PlayerDeath playerClassic;                 // (옵션) 클래식용 PlayerDeath
+    public PlayerDeath_SpeedRun speedRunDeath;        // (옵션) 스피드런 전용 PlayerDeath
 
-    [Header("Best Record UI")]
-    public TextMeshProUGUI bestValueText; // 000 M
+    [Header("Best Record UI (옵션)")]
+    public TextMeshProUGUI bestValueText;             // "MAX 000 M" 같은 표시 (있으면 갱신)
 
     [Header("Time")]
-    [Tooltip("기본 제한 시간(초) — 리셋/시작 시 이 값으로 복원됩니다.")]
+    [Tooltip("제한 시간(초). 타이틀/런 시작시 이 값으로 복원됩니다.")]
     [SerializeField] float defaultSeconds = 60f;
 
-    // ▶ 외부에서 읽을 초기 시간/경과 시간 (기존 기능은 그대로 두고 '읽기'만 제공)
-    public float initialTime => Mathf.Max(0f, defaultSeconds);
-    public float ElapsedSeconds => Mathf.Clamp(initialTime - timeRemaining, 0f, initialTime);
+    // 외부에서 읽기 좋은 프로퍼티
+    public float InitialSeconds => Mathf.Max(0f, defaultSeconds);
+    public float ElapsedSeconds => Mathf.Clamp(InitialSeconds - timeRemaining, 0f, InitialSeconds);
 
-    [HideInInspector] public float timeRemaining; // 현재 남은 시간(런타임)
-    bool countdownStarted = false;   // ‘플레이어가 움직이기 시작했는가’
-    bool countdownEnded = false;     // 시간 종료 여부
-
-    // CountDown.cs 안에 아래 1줄만 추가 (필드 이름은 너의 코드 기준)
-    public float InitialSeconds => defaultSeconds;
+    [HideInInspector] public float timeRemaining;     // 현재 남은 시간
+    bool countdownStarted = false;                    // 실제로 플레이어가 움직여서 카운트다운이 시작됐는가
+    bool countdownEnded = false;                      // 0에 도달했는가
 
     void Awake()
     {
-        // 씬 진입 시 내부 상태 초기화
-        timeRemaining = Mathf.Max(0f, defaultSeconds);
+        // 레퍼런스 자동 탐색(비어 있을 때만)
+        if (!playerClassic) playerClassic = FindObjectOfType<PlayerDeath>(true);
+        if (!speedRunDeath) speedRunDeath = FindObjectOfType<PlayerDeath_SpeedRun>(true);
+
+        // 런타임 상태 초기화
+        timeRemaining = InitialSeconds;
         countdownStarted = false;
         countdownEnded = false;
     }
@@ -46,62 +48,52 @@ public class CountDown : MonoBehaviour
 
     void Update()
     {
-        // ★ 게임이 실제로 시작되기 전에는 타이머 로직 자체를 아예 동작시키지 않음
+        // 게임이 아직 시작되지 않았다면 아무 것도 하지 않음(타이틀 상태)
         if (!StartGate.GameStarted) return;
 
-        // 아직 스타트 플래그가 없다면 입력 감지로 스타트
+        // 첫 입력(이동/점프) 시 카운트다운 시작
         if (!countdownStarted && PlayerStartedMoving())
             countdownStarted = true;
 
         if (!countdownStarted || countdownEnded) return;
 
-        // 타임 감소
+        // 남은 시간 감소
         timeRemaining -= Time.deltaTime;
         if (timeRemaining < 0f) timeRemaining = 0f;
 
+        // UI 갱신
         if (timerText)
         {
             timerText.text = timeRemaining.ToString("F2");
             if (timeRemaining < 10f) timerText.color = Color.red;
         }
 
-        // 0이 되면 사망 처리
+        // 0이 되면 타임업 처리
         if (timeRemaining <= 0f)
         {
             countdownEnded = true;
 
-            // ★ 표시 스코어 얼리고 기록 확정 (스피드런용)
+            // 스피드런: 표시 스코어 프리즈 + 기록 확정
             if (ScoreSystem_Speed.I) ScoreSystem_Speed.I.FreezeScoreAndCommit();
 
-            if (player) player.Die("Countdown Ended");
+            // 스피드런 전용 죽음 연출이 있으면 그걸 먼저 사용
+            if (speedRunDeath != null)
+            {
+                speedRunDeath.Die("TimeUp");
+            }
+            else
+            {
+                // 백업 경로: 클래식용 PlayerDeath 또는 즉시 GameOver
+                if (playerClassic) playerClassic.Die("Countdown Ended");
+                else SimpleGameOver.TryGameOver("Countdown Ended");
+            }
         }
     }
 
-    bool PlayerStartedMoving()
-    {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        bool jumpPressed = Input.GetKeyDown(KeyCode.Space);
-        return Mathf.Abs(horizontal) > 0f || Mathf.Abs(vertical) > 0f || jumpPressed;
-    }
-
-    void UpdateBestRecordUI()
-    {
-        if (bestValueText && ScoreSystem.I != null)
-        {
-            var s = ScoreSystem.I;
-            bestValueText.text = "MAX " + $"{s.BestEverScore:0} M";
-        }
-    }
-
-    // ===== 외부에서 호출(타이틀/시작 시 안전 리셋) =====
-
-    /// <summary>
-    /// 타이틀로 들어갈 때 호출: 타이머/플래그를 기본값으로 초기화하고 UI도 갱신.
-    /// </summary>
+    // -------- 타이틀/런 진입시 안전 초기화 --------
     public void PrepareForTitle()
     {
-        timeRemaining = Mathf.Max(0f, defaultSeconds);
+        timeRemaining = InitialSeconds;
         countdownStarted = false;
         countdownEnded = false;
 
@@ -112,14 +104,10 @@ public class CountDown : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 게임 시작 직전에 호출: 항상 ‘풀타임’에서 출발하도록 보장.
-    /// (타이틀-시작 입력 타이밍에 0으로 내려가 있던 케이스도 방지)
-    /// </summary>
     public void PrepareForRun()
     {
-        timeRemaining = Mathf.Max(0f, defaultSeconds);
-        countdownStarted = false;   // 움직이면 다시 true로 전환됨
+        timeRemaining = InitialSeconds;
+        countdownStarted = false;   // 움직이면 true로 전환
         countdownEnded = false;
 
         if (timerText)
@@ -129,14 +117,37 @@ public class CountDown : MonoBehaviour
         }
     }
 
+    // -------- 보조 --------
+    bool PlayerStartedMoving()
+    {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+        bool jump = Input.GetKeyDown(KeyCode.Space);
+        return Mathf.Abs(horizontal) > 0f || Mathf.Abs(vertical) > 0f || jump;
+    }
+
+    void UpdateBestRecordUI()
+    {
+        if (!bestValueText) return;
+
+        // 스피드런 최고기록 우선 표시, 없으면 클래식 표시(선택)
+        if (ScoreSystem_Speed.I != null)
+        {
+            bestValueText.text = "MAX " + $"{ScoreSystem_Speed.I.BestEverScore:0} M";
+        }
+        else if (ScoreSystem.I != null)
+        {
+            bestValueText.text = "MAX " + $"{ScoreSystem.I.BestEverScore:0} M";
+        }
+    }
+
 #if UNITY_EDITOR
     void OnValidate()
     {
-        if (!Application.isPlaying)
-        {
-            // 에디터에서 기본값 바꾸면 미리 표기 반영
-            if (timerText) timerText.text = Mathf.Max(0f, defaultSeconds).ToString("F2");
-        }
+        if (!Application.isPlaying && timerText)
+            timerText.text = Mathf.Max(0f, defaultSeconds).ToString("F2");
     }
 #endif
 }
+
+

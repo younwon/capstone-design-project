@@ -258,12 +258,25 @@ public class GameOverUI : MonoBehaviour
     // ====== 버튼 ======
     public void OnClickRestart()
     {
+        // 시간/입력 잠금 해제
         Time.timeScale = 1f;
         InputLocked = false;
         suppressRestoreHUD = true;
+
+        // 다음 씬 로드 직후 타이틀을 건너뛰고 즉시 인게임으로 진입
+        StartGate.SkipTitleOnce = true;
+
+        // UI 레이캐스트 차단 제거
+        HideImmediate();
+
+        // 현재 씬 재로드
         var s = SceneManager.GetActiveScene();
         SceneManager.LoadScene(s.buildIndex);
+
+        // 만약 FadeRouter를 반드시 쓰고 싶다면 ↑ 두 줄 대신 아래 한 줄:
+        // FadeRouter.Load(s.name, skipTitleOnce: true);
     }
+
 
     public void OnClickHome()
     {
