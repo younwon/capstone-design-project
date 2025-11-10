@@ -10,11 +10,11 @@ public class ScoreSystem_Speed : MonoBehaviour
     public float baselineY = 0f;       // y=0이 0m면 0
 
     [Header("Prefs Keys")]
-    [SerializeField] string PREF_BEST = "SPEED_BEST";           // 스피드런 전용 키
+    [SerializeField] string PREF_BEST = "SPEED_BEST";    // 스피드런 전용 키
     [SerializeField] string PREF_BEST_TIME = "SPEED_BEST_TIME"; // (원하면 시간도 기록)
 
     // “현재 높이”가 곧 점수
-    public int CurrentScore { get; private set; }  // 실시간 현재 높이(내부)
+    public int CurrentScore { get; private set; }   // 실시간 현재 높이(내부)
     public int BestEverScore { get; private set; }  // 최고 기록(영구)
     public float ThisRunTime { get; private set; }  // 이번 판 경과 시간(선택)
 
@@ -25,13 +25,9 @@ public class ScoreSystem_Speed : MonoBehaviour
 
     // 내부
     float _runTimer;
-    bool _ended;         // 게임오버 확정
-    bool _frozen;        // 표시 스코어 동결?
-    int _frozenScore;   // 동결된 표시 값
-
-    // 업적: 15m 넘으면 즉시 1회 발동 (스팸 방지)
-    const int ACHIEVE_HEIGHT = 15;
-    bool _achievementTriggered;
+    bool _ended;        // 게임오버 확정
+    bool _frozen;       // 표시 스코어를 동결했는가
+    int _frozenScore;  // 동결된 표시 값
 
     void Awake()
     {
@@ -53,8 +49,6 @@ public class ScoreSystem_Speed : MonoBehaviour
         _frozenScore = 0;
         IsNewRecord = false;
         ThisRunTime = 0f;
-
-        _achievementTriggered = false;
     }
 
     void Update()
@@ -64,23 +58,12 @@ public class ScoreSystem_Speed : MonoBehaviour
         // 진행 중 시간 누적
         _runTimer += Time.deltaTime;
 
-        // 현재 높이 계산(항상 갱신되지만, 화면 표시는 DisplayScore 사용 권장)
+        // 현재 높이 계산(항상 갱신되지만, 화면 표시는 DisplayScore를 쓰면 안전)
         float curMeters = Mathf.Max(0f, (player.position.y - baselineY) * metersPerUnit);
         int cur = Mathf.FloorToInt(curMeters);
         if (cur != CurrentScore) CurrentScore = cur;
 
-        // ✅ 1번 코드의 업적 로직 유지하되 "한 번만" 트리거
-        if (!_achievementTriggered && curMeters >= ACHIEVE_HEIGHT)
-        {
-            if (AchievementManager.Instance != null)
-            {
-                AchievementManager.Instance.UnlockAchievement("TEST");
-                Debug.Log("업적 달성");
-            }
-            _achievementTriggered = true;
-        }
-
-        // ✅ 2번 코드의 F9 초기화 단축키 유지(에디터/개발빌드만)
+        // ✅ 추가됨 : F9 키로 최고기록 초기화
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Input.GetKeyDown(KeyCode.F9))
         {
@@ -89,16 +72,21 @@ public class ScoreSystem_Speed : MonoBehaviour
 #endif
     }
 
-    /// <summary>카운트다운이 0이 되는 그 순간 호출. 표시 스코어 얼리고 기록 확정.</summary>
+    /// <summary>
+    /// 카운트다운이 0이 되는 ‘그 순간’ 호출. 표시 스코어를 얼리고 기록 확정.
+    /// </summary>
     public void FreezeScoreAndCommit()
     {
         if (_frozen) return;
         _frozenScore = CurrentScore;
         _frozen = true;
+
         CommitBestCurrent();
     }
 
-    /// <summary>이번 판 기록을 확정(현재 표시값 기준).</summary>
+    /// <summary>
+    /// 이번 판 기록을 확정(현재 표시값 기준). 스피드런은 “현재 높이”가 기록.
+    /// </summary>
     public void CommitBestCurrent()
     {
         if (_ended) return;
@@ -116,10 +104,21 @@ public class ScoreSystem_Speed : MonoBehaviour
             // PlayerPrefs.SetFloat(PREF_BEST_TIME, ThisRunTime); // 시간도 저장하려면 주석 해제
             PlayerPrefs.Save();
             IsNewRecord = true;
+
+            if (candidate >= 15)
+            {
+                if (AchievementManager.Instance != null)
+                {
+                    AchievementManager.Instance.UnlockAchievement("TEST");
+                    Debug.Log("업적 달성");
+                }
+            }
         }
     }
 
-    /// <summary>새 판 시작 시 호출(씬 리로드 또는 수동 리셋).</summary>
+    /// <summary>
+    /// 새 판 시작 시 호출(씬 리로드 또는 수동 리셋).
+    /// </summary>
     public void ResetRun()
     {
         CurrentScore = 0;
@@ -129,11 +128,9 @@ public class ScoreSystem_Speed : MonoBehaviour
         _runTimer = 0f;
         ThisRunTime = 0f;
         IsNewRecord = false;
-
-        _achievementTriggered = false;
     }
 
-    // ✅ 최고기록 초기화(2번 코드 유지)
+    // ✅ 추가됨 : 최고기록 초기화 함수
     [ContextMenu("Reset BestEver (PlayerPrefs)")]
     public void ClearBestEver()
     {
