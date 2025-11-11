@@ -21184,7 +21184,7 @@ MonoBehaviour:
   tiers:
   - minMeters: 0
     entries:
-    - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
+    - prefab: {fileID: 1834732117358071206, guid: 62c83312531dcba42af2b62d107de0a5, type: 3}
       weight: 100
   - minMeters: 30
     entries:
