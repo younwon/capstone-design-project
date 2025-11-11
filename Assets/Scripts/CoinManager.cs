@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
@@ -7,51 +6,74 @@ using UnityEngine.SceneManagement;
 public class CoinManager : MonoBehaviour
 {
     public static CoinManager Instance;
-    public int currentCoins = 0;
-    public TextMeshProUGUI coinText;
-    private const string COIN_PREFS_KEY = "CURRENT_COINS";
 
-    private void Awake()
+    [Header("State")]
+    public int currentCoins = 0;
+
+    // âœ… ê¸°ì¡´ í•„ë“œ ìœ ì§€(í˜¸í™˜ìš©) + ë‚´ë¶€ì—ì„  ë‹¤ì¤‘ íƒ€ê¹ƒ ë¦¬ìŠ¤íŠ¸ë¡œ ì²˜ë¦¬
+    [Header("UI (optional)")]
+    public TextMeshProUGUI coinText; // ë‚¨ê²¨ë‘ë˜, ì‹¤ì œ ê°±ì‹ ì€ ë¦¬ìŠ¤íŠ¸ ì‚¬ìš©
+    readonly List<TextMeshProUGUI> _targets = new List<TextMeshProUGUI>();
+
+    const string COIN_PREFS_KEY = "CURRENT_COINS";
+    const string UI_OBJECT_NAME = "CoinText"; // ì”¬ ë‚´ í…ìŠ¤íŠ¸ ì˜¤ë¸Œì íŠ¸ ì´ë¦„
+
+    void Awake()
     {
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
         currentCoins = PlayerPrefs.GetInt(COIN_PREFS_KEY, 0);
 
-        // ¾ÀÀÌ ·ÎµåµÉ ¶§¸¶´Ù ½ÇÇàµÉ ÀÌº¥Æ® ¸®½º³Ê µî·Ï
+        // ì”¬ ë¡œë“œì‹œ UI íƒ€ê¹ƒ ì¬ìˆ˜ì§‘
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        // ì—ë””í„°ì—ì„œ ìµœì´ˆ ì”¬ì—ì„œë„ ë°”ë¡œ í‘œì‹œë˜ê²Œ í•œ ë²ˆ ê°±ì‹ 
+        RefreshUiTargets();
+        UpdateCoinText();
     }
 
-    private void OnDestroy()
+    void OnDestroy()
     {
-        // ½ºÅ©¸³Æ®°¡ ÆÄ±«µÉ ¶§ ÀÌº¥Æ® ¸®½º³Ê Á¦°Å
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    // ¾ÀÀÌ ·ÎµåµÉ ¶§ È£ÃâµÇ´Â ÇÔ¼ö
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    // ===== ì”¬ ì§„ì… ì‹œ UI íƒ€ê¹ƒ ì¬ë°”ì¸ë”© =====
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // »õ ¾À¿¡¼­ "CoinText"¶ó´Â ÀÌ¸§ÀÇ ¿ÀºêÁ§Æ®¸¦ Ã£¾Æ ¿¬°á
-        GameObject coinTextObject = GameObject.Find("CoinText");
-        if (coinTextObject != null)
-        {
-            coinText = coinTextObject.GetComponent<TextMeshProUGUI>();
-            // UI ¿¬°á ÈÄ ÄÚÀÎ °³¼ö ¾÷µ¥ÀÌÆ®
-            UpdateCoinText();
-            Debug.Log("»õ·Î¿î ¾ÀÀÇ ÄÚÀÎ ÅØ½ºÆ® ¿ÀºêÁ§Æ®¸¦ Ã£¾Ò½À´Ï´Ù.");
-        }
-        else
-        {
-            Debug.LogError("»õ·Î¿î ¾À¿¡¼­ 'CoinText' ¿ÀºêÁ§Æ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
-        }
+        RefreshUiTargets();
+        UpdateCoinText();
+#if UNITY_EDITOR
+        Debug.Log("ìƒˆë¡œìš´ ì”¬ì˜ ì½”ì¸ í…ìŠ¤íŠ¸ ì˜¤ë¸Œì íŠ¸ë“¤ì„ ë‹¤ì‹œ ë°”ì¸ë”©í–ˆìŠµë‹ˆë‹¤.");
+#endif
     }
 
+    // ì”¬ ì•ˆì˜ ëª¨ë“  CoinText(TextMeshProUGUI) ìˆ˜ì§‘ (ë¹„í™œì„± í¬í•¨)
+    void RefreshUiTargets()
+    {
+        _targets.Clear();
+
+        // 1) ì´ë¦„ì´ CoinText ì¸ TextMeshProUGUI ì „ë¶€(ë¹„í™œì„± í¬í•¨)
+        var allTmp = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>();
+        foreach (var t in allTmp)
+        {
+            if (t != null && t.name == UI_OBJECT_NAME)
+            {
+                _targets.Add(t);
+            }
+        }
+
+        // 2) í˜¸í™˜ìš©: ì¸ìŠ¤í™í„°ì— ìˆ˜ë™ ì§€ì •í•œ coinTextê°€ ìˆìœ¼ë©´ í¬í•¨
+        if (coinText && !_targets.Contains(coinText))
+            _targets.Add(coinText);
+    }
+
+    // ===== ì½”ì¸ ì¡°ì‘ =====
     public void AddCoin(int amount)
     {
         currentCoins += amount;
@@ -66,33 +88,44 @@ public class CoinManager : MonoBehaviour
             currentCoins -= amount;
             UpdateCoinText();
             SaveCoins();
-            return true; // ÄÚÀÎ ¼Ò¸ğ ¼º°ø
+            return true;
         }
         else
         {
-            Debug.LogWarning("ÄÚÀÎÀÌ ºÎÁ·ÇÕ´Ï´Ù! (ÇöÀç ÄÚÀÎ: " + currentCoins + ")");
-            return false; // ÄÚÀÎ ¼Ò¸ğ ½ÇÆĞ
+            Debug.LogWarning($"ì½”ì¸ì´ ë¶€ì¡±í•©ë‹ˆë‹¤! (í˜„ì¬ ì½”ì¸: {currentCoins})");
+            return false;
         }
     }
 
-    public int GetCoinCount()
-    {
-        return currentCoins;
-    }
+    public int GetCoinCount() => currentCoins;
 
-    private void UpdateCoinText()
+    // ===== UI ê°±ì‹  =====
+    void UpdateCoinText()
     {
-        if (coinText != null)
+        // ë¦¬ìŠ¤íŠ¸ê°€ ë¹„ì–´ ìˆìœ¼ë©´ í•œ ë²ˆ ë” íƒìƒ‰(ì”¬ ì „í™˜ ì§í›„ íƒ€ì´ë° ì¼€ì–´)
+        if (_targets.Count == 0) RefreshUiTargets();
+
+        // ëª¨ë“  íƒ€ê¹ƒì— ë™ì¼ í…ìŠ¤íŠ¸ ë°˜ì˜
+        for (int i = _targets.Count - 1; i >= 0; i--)
         {
-            coinText.text = currentCoins.ToString();
+            var t = _targets[i];
+            if (!t)
+            {
+                _targets.RemoveAt(i);
+                continue;
+            }
+            t.text = currentCoins.ToString();
         }
     }
 
-    private void SaveCoins()
+    // ===== ì €ì¥ =====
+    void SaveCoins()
     {
         PlayerPrefs.SetInt(COIN_PREFS_KEY, currentCoins);
         PlayerPrefs.Save();
-        Debug.Log($"ÄÚÀÎ ÀúÀå ¿Ï·á. ÇöÀç ÄÚÀÎ: {currentCoins}");
+#if UNITY_EDITOR
+        Debug.Log($"ì½”ì¸ ì €ì¥ ì™„ë£Œ. í˜„ì¬ ì½”ì¸: {currentCoins}");
+#endif
     }
 
     [ContextMenu("Reset All Coins (PlayerPrefs)")]
@@ -102,17 +135,29 @@ public class CoinManager : MonoBehaviour
         PlayerPrefs.Save();
         currentCoins = 0;
         UpdateCoinText();
-        Debug.Log("[CoinManager] ¸ğµç ÄÚÀÎ ÃÊ±âÈ­ ¿Ï·á");
+        Debug.Log("[CoinManager] ëª¨ë“  ì½”ì¸ ì´ˆê¸°í™” ì™„ë£Œ");
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     void LateUpdate()
     {
         if (!Application.isPlaying) return;
         if (Input.GetKeyDown(KeyCode.F9))
-        {
             ClearAllCoins();
-        }
     }
 #endif
+
+    // ===== ì„ íƒ: ì½”ë“œë¡œ ì§ì ‘ íƒ€ê¹ƒ ë“±ë¡í•˜ê³  ì‹¶ì„ ë•Œ =====
+    public void RegisterTarget(TextMeshProUGUI target)
+    {
+        if (!target) return;
+        if (!_targets.Contains(target)) _targets.Add(target);
+        UpdateCoinText();
+    }
+
+    public void UnregisterTarget(TextMeshProUGUI target)
+    {
+        if (!target) return;
+        _targets.Remove(target);
+    }
 }
