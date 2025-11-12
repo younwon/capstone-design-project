@@ -1,41 +1,48 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Collections;
-using TMPro;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class AchievementManager : MonoBehaviour
 {
-    public static AchievementManager Instance;
+    private static AchievementManager _instance;
 
-    [Header("Achievement IDs")]
+    public static AchievementManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                // 씬에서 인스턴스를 찾습니다.
+                _instance = FindObjectOfType<AchievementManager>();
+
+                if (_instance == null)
+                {
+                    Debug.LogError("[AchievementManager] 씬에 AchievementManager가 없습니다!");
+                }
+            }
+            return _instance;
+        }
+    }
+    // 이 업적 관리자가 알고 있어야 할 모든 업적 ID 목록
     public List<string> allAchievementIds = new List<string>();
 
-    // 업적 달성 상태
-    private readonly Dictionary<string, bool> achievementStatus = new Dictionary<string, bool>();
+    // 아이콘 검색을 위해 이 매니저가 직접 아이템 DB를 가지고 있어야 합니다.
+    [Header("아이템 데이터베이스")]
+    public List<ShopItemData> allShopItems;
+
+    // 씬에 있는 UI의 참조를 저장할 변수
+    private AchievementNotificationUI notificationUI;
+
+    // 업적 달성 상태 (메모리)
+    private Dictionary<string, bool> achievementStatus = new Dictionary<string, bool>();
     private const string ACHIEVEMENT_PREFS_PREFIX = "ACHIEVEMENT_";
 
-    [Header("Notification (Prefab mode)")]
-    public GameObject notificationPrefab;      // 프리팹 알림 방식
-    public Transform notificationParent;       // 알림 부모(Canvas)
-    public float displayDuration = 3f;         // 표시 시간
-
-    [Header("Notification (Inline UI mode)")]
-    [Tooltip("AchievementNotificationUI 컴포넌트를 직접 등록하면, 프리팹 대신 이 UI로 표시합니다.")]
-    public AchievementNotificationUI inlineUI; // 등록식 알림 UI(옵션)
-
-    private readonly Queue<string> achievementQueue = new Queue<string>();
-    private bool isDisplaying = false;
-
-    void Awake()
+    private void Awake()
     {
-        if (Instance == null)
+        if (_instance == null)
         {
-            Instance = this;
+            _instance = this;
             DontDestroyOnLoad(gameObject);
-            LoadAchievements();
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            LoadAchievements(); // 게임 시작 시 저장된 업적 불러오기
         }
         else
         {
@@ -43,166 +50,113 @@ public class AchievementManager : MonoBehaviour
         }
     }
 
-    void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    // 씬 로드 시, 프리팹 모드에서 쓸 부모 Canvas 자동 획득
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (notificationParent == null) // 이미 다른 씬에서 설정돼 있으면 유지
-        {
-            GameObject canvasObj = GameObject.Find("NotificationCanvas");
-            if (canvasObj != null)
-            {
-                notificationParent = canvasObj.transform;
-                Debug.Log("[AchievementManager] Found NotificationCanvas.");
-            }
-            else
-            {
-                Debug.LogWarning("[AchievementManager] 'NotificationCanvas' not found in scene.");
-            }
-        }
-    }
-
-    // [ADD] AchievementNotificationUI가 자신을 등록할 때 호출
+    // 씬에 있는 AchievementNotificationUI가 스스로를 등록하는 함수
     public void RegisterNotificationUI(AchievementNotificationUI ui)
     {
-        inlineUI = ui;
-        if (inlineUI && inlineUI.gameObject.activeSelf)
-            inlineUI.gameObject.SetActive(false); // 시작 시 숨김
-        Debug.Log("[AchievementManager] Notification UI registered.");
+        notificationUI = ui;
+        Debug.Log("[AchievementManager] 알림 UI가 성공적으로 등록되었습니다.");
     }
 
-    // 업적 해제 여부 조회(조건 ID 비었으면 true)
-    public bool IsAchievementUnlocked(string achievementId)
-    {
-        if (string.IsNullOrEmpty(achievementId)) return true;
-        return achievementStatus.ContainsKey(achievementId) && achievementStatus[achievementId];
-    }
-
-    // 업적 달성 처리
+    // 업적 달성 시 호출되는 메인 함수
     public void UnlockAchievement(string achievementId)
     {
+        // 이미 달성했다면 중복 실행 방지
         if (IsAchievementUnlocked(achievementId)) return;
 
         achievementStatus[achievementId] = true;
         SaveAchievement(achievementId);
-        Debug.Log($"[Achievement] Unlocked: {achievementId}");
+        Debug.Log($"업적 달성: {achievementId}");
 
-        achievementQueue.Enqueue(achievementId);
-        if (!isDisplaying) StartCoroutine(ProcessQueue());
+        // --- 알림 UI 호출 로직 ---
 
-        // 상점 버튼 새로 고침(있을 때)
-        if (ShopManager.Instance != null)
-            ShopManager.Instance.UpdateAllItemButtons();
+        // 1. 텍스트 준비
+        string notificationText = $"YOU GOT!\n'{achievementId}'";
 
-        // 로컬 함수: 큐 처리 코루틴
-        IEnumerator ProcessQueue()
+        // 2. 아이콘 검색
+        Sprite iconSprite = null;
+        if (allShopItems != null)
         {
-            isDisplaying = true;
-
-            // 표시 준비가 될 때까지 대기
-            while (inlineUI == null && notificationParent == null && notificationPrefab == null)
+            foreach (var item in allShopItems)
             {
-                Debug.LogWarning("[AchievementManager] Waiting for UI (inlineUI or notificationParent/prefab)...");
-                yield return null;
-            }
-
-            while (achievementQueue.Count > 0)
-            {
-                string id = achievementQueue.Dequeue();
-
-                // 아이콘(선택) 탐색: ShopManager에서 해당 업적에 연결된 아이템 아이콘을 찾아본다
-                Sprite iconSprite = null;
-                if (ShopManager.Instance != null && ShopManager.Instance.shopItems != null)
+                if (item.requiredAchievementId == achievementId)
                 {
-                    foreach (var item in ShopManager.Instance.shopItems)
-                    {
-                        if (item != null && item.requiredAchievementId == id)
-                        {
-                            iconSprite = item.itemIcon;
-                            break;
-                        }
-                    }
-                }
-
-                // 1) Inline UI가 등록되어 있으면 그것으로 표시
-                if (inlineUI != null)
-                {
-                    inlineUI.Show($"YOU GOT!\n'{id}'", iconSprite);
-                    yield return new WaitForSeconds(displayDuration);
-                }
-                // 2) 프리팹 모드로 표시
-                else if (notificationPrefab != null && notificationParent != null)
-                {
-                    GameObject go = Instantiate(notificationPrefab, notificationParent);
-
-                    // 텍스트
-                    var text = go.GetComponentInChildren<TextMeshProUGUI>();
-                    if (text) text.text = $"YOU GOT!\n'{id}'";
-
-                    // 아이콘
-                    Image iconImage = null;
-                    var t = go.transform.Find("ItemIcon");
-                    if (t) iconImage = t.GetComponent<Image>();
-
-                    if (iconImage != null)
-                    {
-                        if (iconSprite != null)
-                        {
-                            iconImage.sprite = iconSprite;
-                            iconImage.gameObject.SetActive(true);
-                        }
-                        else iconImage.gameObject.SetActive(false);
-                    }
-
-                    yield return new WaitForSeconds(displayDuration);
-                    Destroy(go);
-                    yield return new WaitForSeconds(0.2f);
-                }
-                else
-                {
-                    Debug.LogWarning($"[AchievementManager] No UI to display achievement '{id}'.");
+                    iconSprite = item.itemIcon;
+                    break;
                 }
             }
+        }
 
-            isDisplaying = false;
+        // 3. UI 띄우기
+        if (notificationUI != null)
+        {
+            // 등록된 UI의 Show 함수를 호출
+            notificationUI.Show(notificationText, iconSprite);
+        }
+        else
+        {
+            Debug.LogError("[AchievementManager] 알림 UI가 등록되지 않았습니다! 씬에 AchievementNotificationUI가 있는지 확인하세요.");
+        }
+
+        // --- 알림 로직 끝 ---
+
+        // 상점 UI 갱신 (상점이 열려있을 경우를 대비)
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.UpdateAllItemButtons();
         }
     }
 
-    // 저장/로드
-    void SaveAchievement(string achievementId)
+    // 업적 달성 여부 확인
+    public bool IsAchievementUnlocked(string achievementId)
+    {
+        if (string.IsNullOrEmpty(achievementId))
+        {
+            return true; // ID가 없으면 항상 해금 상태
+        }
+        return achievementStatus.ContainsKey(achievementId) && achievementStatus[achievementId];
+    }
+
+    // 업적 저장
+    private void SaveAchievement(string achievementId)
     {
         PlayerPrefs.SetInt(ACHIEVEMENT_PREFS_PREFIX + achievementId, 1);
         PlayerPrefs.Save();
     }
 
-    void LoadAchievements()
+    // 게임 시작 시 업적 로드
+    private void LoadAchievements()
     {
-        // 필요 시 allAchievementIds를 돌며 PlayerPrefs 값을 채우는 로직로 확장 가능
-        // 여기서는 간단히 시작 상태를 초기화만 합니다.
         achievementStatus.Clear();
-        foreach (var id in allAchievementIds)
+        foreach (string id in allAchievementIds)
         {
             if (PlayerPrefs.GetInt(ACHIEVEMENT_PREFS_PREFIX + id, 0) == 1)
+            {
                 achievementStatus[id] = true;
+            }
+            else
+            {
+                achievementStatus[id] = false;
+            }
         }
     }
 
-    [ContextMenu("모든 업적 초기화")]
+    // 업적 초기화 (디버그용)
+    [ContextMenu("모든 업적 초기화 (PlayerPrefs)")]
     public void ClearAllAchievements()
     {
         foreach (string id in allAchievementIds)
+        {
             PlayerPrefs.DeleteKey(ACHIEVEMENT_PREFS_PREFIX + id);
-
-        achievementStatus.Clear();
+        }
         PlayerPrefs.Save();
+        achievementStatus.Clear();
+        LoadAchievements(); // 딕셔너리도 초기화
 
-        Debug.Log("[AchievementManager] Cleared all achievements.");
+        Debug.Log("[AchievementManager] 모든 업적 기록이 초기화되었습니다.");
 
         if (ShopManager.Instance != null)
+        {
             ShopManager.Instance.UpdateAllItemButtons();
+        }
     }
 }
