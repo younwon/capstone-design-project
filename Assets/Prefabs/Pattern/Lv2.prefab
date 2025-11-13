@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   palettes:
-  - {fileID: 11400000, guid: 0b93a26dd43c0c64f93d93538699b237, type: 2}
+  - {fileID: 11400000, guid: a8578a5f0b16481448da3415c5bad812, type: 2}
   coinPrefab: {fileID: 5047054674502725462, guid: 8741e4de972358046bac090a85214423, type: 3}
   coinSpawnChance: 5
   coinYOffset: 1
