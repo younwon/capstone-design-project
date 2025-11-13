@@ -95,6 +95,8 @@ public class PauseController : MonoBehaviour
         if (GameOverUI.InputLocked || GameOverUI.IsShown) return;
         if (isPaused) return;
 
+        if (PauseAudioDucker.I) PauseAudioDucker.I.ToPaused();
+
         RefreshStatsFromScore();  // 열기 전에 최신 값으로 갱신
 
         prevTimeScale = Time.timeScale;
@@ -103,11 +105,15 @@ public class PauseController : MonoBehaviour
 
         if (btnPauseIcon) btnPauseIcon.gameObject.SetActive(false);
         if (pausePanel) pausePanel.SetActive(true);
+
+        if (PauseAudioSnapshot.I) PauseAudioSnapshot.I.ToPaused();
     }
 
     public void ClosePause()
     {
         if (!isPaused) return;
+
+        if (PauseAudioDucker.I) PauseAudioDucker.I.ToNormal();
 
         if (popupRestart && popupRestart.activeSelf) popupRestart.SetActive(false);
         if (popupHome && popupHome.activeSelf) popupHome.SetActive(false);
@@ -118,6 +124,8 @@ public class PauseController : MonoBehaviour
 
         Time.timeScale = prevTimeScale;
         isPaused = false;
+
+        if (PauseAudioSnapshot.I) PauseAudioSnapshot.I.ToNormal();
     }
 
     void OpenSettingsFromPause()

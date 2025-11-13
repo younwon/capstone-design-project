@@ -35,6 +35,16 @@ public class SettingsUIController : MonoBehaviour
     [SerializeField] Button btnPopupDiscard;     // 팝업: EXIT(저장 안 함)
     [SerializeField] Button btnPopupSaveAndExit; // 팝업: SAVE AND EXIT
 
+    [Header("Preview on Step Change")]
+    [Tooltip("단계 변경 시 미리듣기 할 짧은 클립(버튼 딸깍/띵 같은 소리 권장)")]
+    [SerializeField] AudioClip previewClip;
+    [Tooltip("프리뷰 출력용 AudioMixerGroup(SFX 그룹 권장)")]
+    [SerializeField] UnityEngine.Audio.AudioMixerGroup previewOutputGroup;
+    [Tooltip("마스터 볼륨을 프리뷰 볼륨에도 반영")]
+    [SerializeField] bool respectMasterForPreview = true;
+    [Tooltip("프리뷰 피치 랜덤")]
+    [SerializeField] Vector2 previewRandomPitch = new Vector2(0.98f, 1.02f);
+
     const int MAX_STEP = 5; // 0~5
     const string KEY_BGM = "SET_BGM";
     const string KEY_SFX = "SET_SFX";
@@ -51,17 +61,19 @@ public class SettingsUIController : MonoBehaviour
     // 음소거 전 단계 저장(복원용)
     int prevBgmStep, prevSfxStep;
 
+    AudioSource _previewSrc; // 프리뷰 전용
+
     // ---------------- Lifecycle ----------------
     void Start()
     {
-        // 리스너만 연결 (값 로드는 OnEnable에서 처리)
-        btnBgmMinus.onClick.AddListener(() => ChangeBgm(-1));
-        btnBgmPlus.onClick.AddListener(() => ChangeBgm(+1));
-        btnSfxMinus.onClick.AddListener(() => ChangeSfx(-1));
-        btnSfxPlus.onClick.AddListener(() => ChangeSfx(+1));
+        // 리스너 연결
+        if (btnBgmMinus) btnBgmMinus.onClick.AddListener(() => ChangeBgm(-1, playPreview: true));
+        if (btnBgmPlus) btnBgmPlus.onClick.AddListener(() => ChangeBgm(+1, playPreview: true));
+        if (btnSfxMinus) btnSfxMinus.onClick.AddListener(() => ChangeSfx(-1, playPreview: true));
+        if (btnSfxPlus) btnSfxPlus.onClick.AddListener(() => ChangeSfx(+1, playPreview: true));
 
-        btnCancel.onClick.AddListener(OnCancel);
-        btnSave.onClick.AddListener(OnSave);
+        if (btnCancel) btnCancel.onClick.AddListener(OnCancel);
+        if (btnSave) btnSave.onClick.AddListener(OnSave);
 
         if (toggleAllSound) toggleAllSound.onValueChanged.AddListener(OnToggleAllSound);
         if (toggleVibration) toggleVibration.onValueChanged.AddListener(OnToggleVibration);
@@ -88,40 +100,114 @@ public class SettingsUIController : MonoBehaviour
     }
 
     // ---------------- BGM / SFX ----------------
-    void ChangeBgm(int delta)
+    void ChangeBgm(int delta, bool playPreview)
     {
         int before = curBgmStep;
         curBgmStep = Mathf.Clamp(curBgmStep + delta, 0, MAX_STEP);
         dirtyBgm = (curBgmStep != initBgmStep);
+
         if (curBgmStep != before)
         {
             UpdateBgmUI(true);
-            if (!curMuteAll && AudioManager.I) AudioManager.I.SetBgm(curBgmStep / (float)MAX_STEP);
+            ApplyLiveVolumes();
+
+            if (playPreview) PlayPreview(forBgm: true);
         }
     }
 
-    void ChangeSfx(int delta)
+    void ChangeSfx(int delta, bool playPreview)
     {
         int before = curSfxStep;
         curSfxStep = Mathf.Clamp(curSfxStep + delta, 0, MAX_STEP);
         dirtySfx = (curSfxStep != initSfxStep);
+
         if (curSfxStep != before)
         {
             UpdateSfxUI(true);
-            if (!curMuteAll && AudioManager.I) AudioManager.I.SetSfx(curSfxStep / (float)MAX_STEP);
+            ApplyLiveVolumes();
+
+            if (playPreview) PlayPreview(forBgm: false);
         }
     }
 
+    float StepTo01(int step) => Mathf.Clamp01(step / (float)MAX_STEP);
+
     void UpdateBgmUI(bool animate)
     {
-        if (txtBgmValue) txtBgmValue.text = curBgmStep.ToString();
+        if (txtBgmValue) txtBgmValue.text = curBgmStep.ToString(); // 0~5
         if (bgBgmValueBox) bgBgmValueBox.sprite = dirtyBgm ? pendingSprite : normalSprite;
     }
 
     void UpdateSfxUI(bool animate)
     {
-        if (txtSfxValue) txtSfxValue.text = curSfxStep.ToString();
+        if (txtSfxValue) txtSfxValue.text = curSfxStep.ToString(); // 0~5
         if (bgSfxValueBox) bgSfxValueBox.sprite = dirtySfx ? pendingSprite : normalSprite;
+    }
+
+    // ---------------- 라이브 적용(미리듣기 겸용) ----------------
+    void ApplyLiveVolumes()
+    {
+        float bgm = curMuteAll ? 0f : StepTo01(curBgmStep);
+        float sfx = curMuteAll ? 0f : StepTo01(curSfxStep);
+
+        // Mixer 우선, 없으면 AudioManager 폴백
+        if (MixerVolumeController.I)
+        {
+            MixerVolumeController.I.SetBgm(bgm);
+            MixerVolumeController.I.SetSfx(sfx);
+        }
+        else if (AudioManager.I)
+        {
+            AudioManager.I.SetBgm(bgm);
+            AudioManager.I.SetSfx(sfx);
+        }
+    }
+
+    void EnsurePreviewSource()
+    {
+        if (_previewSrc) return;
+        _previewSrc = gameObject.AddComponent<AudioSource>();
+        _previewSrc.playOnAwake = false;
+        _previewSrc.loop = false;
+        _previewSrc.spatialBlend = 0f;
+        if (previewOutputGroup) _previewSrc.outputAudioMixerGroup = previewOutputGroup;
+        _previewSrc.volume = 1f; // 최종 볼륨은 PlayOneShot volumeScale로 제어
+    }
+
+    void PlayPreview(bool forBgm)
+    {
+        if (previewClip == null) return;
+
+        // 단계값 기반 프리뷰 볼륨 계산
+        float master = 1f, bgm = StepTo01(curBgmStep), sfx = StepTo01(curSfxStep);
+
+        if (MixerVolumeController.I)
+        {
+            master = MixerVolumeController.I.GetMaster();
+            bgm = MixerVolumeController.I.GetBgm();
+            sfx = MixerVolumeController.I.GetSfx();
+        }
+        else if (AudioManager.I)
+        {
+            // AudioManager에 마스터 개념이 별도로 없다면 master=1로 둠
+            bgm = StepTo01(curBgmStep);
+            sfx = StepTo01(curSfxStep);
+        }
+
+        float vol = forBgm ? bgm : sfx;
+        if (respectMasterForPreview) vol *= master;
+        vol = Mathf.Clamp01(vol);
+        if (curMuteAll) vol = 0f;
+
+        if (vol <= 0f) return;
+
+        EnsurePreviewSource();
+        float pitch = (previewRandomPitch.x <= 0f && previewRandomPitch.y <= 0f)
+            ? 1f
+            : Random.Range(Mathf.Min(previewRandomPitch.x, previewRandomPitch.y),
+                           Mathf.Max(previewRandomPitch.x, previewRandomPitch.y));
+        _previewSrc.pitch = pitch;
+        _previewSrc.PlayOneShot(previewClip, vol);
     }
 
     // ---------------- ALL MUTE ----------------
@@ -139,12 +225,6 @@ public class SettingsUIController : MonoBehaviour
             curSfxStep = 0; dirtySfx = (curSfxStep != initSfxStep);
             UpdateBgmUI(false);
             UpdateSfxUI(false);
-
-            if (AudioManager.I)
-            {
-                AudioManager.I.SetBgm(0f);
-                AudioManager.I.SetSfx(0f);
-            }
         }
         else
         {
@@ -154,15 +234,11 @@ public class SettingsUIController : MonoBehaviour
             dirtySfx = (curSfxStep != initSfxStep);
             UpdateBgmUI(false);
             UpdateSfxUI(false);
-
-            if (AudioManager.I)
-            {
-                AudioManager.I.SetBgm(curBgmStep / (float)MAX_STEP);
-                AudioManager.I.SetSfx(curSfxStep / (float)MAX_STEP);
-            }
         }
 
         ApplyMuteAllVisual(curMuteAll);
+        ApplyLiveVolumes(); // 즉시 적용
+        if (!on) PlayPreview(forBgm: false); // 음소거 해제 시 살짝 프리뷰
     }
 
     void ApplyMuteAllVisual(bool muted)
@@ -185,7 +261,12 @@ public class SettingsUIController : MonoBehaviour
     {
         if (curMuteAll)
         {
-            if (AudioManager.I)
+            if (MixerVolumeController.I)
+            {
+                MixerVolumeController.I.SetBgm(0f);
+                MixerVolumeController.I.SetSfx(0f);
+            }
+            else if (AudioManager.I)
             {
                 AudioManager.I.SetBgm(0f);
                 AudioManager.I.SetSfx(0f);
@@ -196,10 +277,15 @@ public class SettingsUIController : MonoBehaviour
         }
         else
         {
-            float bgm = curBgmStep / (float)MAX_STEP;
-            float sfx = curSfxStep / (float)MAX_STEP;
+            float bgm = StepTo01(curBgmStep);
+            float sfx = StepTo01(curSfxStep);
 
-            if (AudioManager.I)
+            if (MixerVolumeController.I)
+            {
+                MixerVolumeController.I.SetBgm(bgm);
+                MixerVolumeController.I.SetSfx(sfx);
+            }
+            else if (AudioManager.I)
             {
                 AudioManager.I.SetBgm(bgm);
                 AudioManager.I.SetSfx(sfx);
@@ -298,14 +384,7 @@ public class SettingsUIController : MonoBehaviour
 
     void ApplyPreviewVolumesFromCurrent()
     {
-        float bgm = curMuteAll ? 0f : (curBgmStep / (float)MAX_STEP);
-        float sfx = curMuteAll ? 0f : (curSfxStep / (float)MAX_STEP);
-        if (AudioManager.I)
-        {
-            AudioManager.I.SetBgm(bgm);
-            AudioManager.I.SetSfx(sfx);
-        }
-        ApplyMuteAllVisual(curMuteAll);
+        ApplyLiveVolumes(); // 현재 단계값을 즉시 반영
     }
 
     void RefreshAllUI()
@@ -317,4 +396,3 @@ public class SettingsUIController : MonoBehaviour
         ApplyMuteAllVisual(curMuteAll);
     }
 }
-
