@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5624611043711586518}
   - component: {fileID: 6126124071588772758}
   m_Layer: 0
-  m_Name: SB_Spring
+  m_Name: Lv1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   palettes:
-  - {fileID: 11400000, guid: 6ebf750ea1643874bb06f7d422e25593, type: 2}
+  - {fileID: 11400000, guid: d34cd53af7e6a8a418e2c5906ad70463, type: 2}
   coinPrefab: {fileID: 5047054674502725462, guid: 8741e4de972358046bac090a85214423, type: 3}
   coinSpawnChance: 5
   coinYOffset: 1
@@ -61,7 +61,7 @@ MonoBehaviour:
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
-    allowSpring: 0
+    allowSpring: 1
   - lane: 5
     rowOffset: 3
     yFine: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
-    allowSpring: 0
+    allowSpring: 1
   - lane: 3
     rowOffset: 6
     yFine: 0

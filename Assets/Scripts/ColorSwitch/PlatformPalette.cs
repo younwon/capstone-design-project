@@ -24,6 +24,13 @@ public class PlatformPalette : ScriptableObject
     [Tooltip("스프링 블록이 사용될 확률(%)")]
     [Range(0f, 100f)] public float springChance = 0f;
 
+    // [추가된 부분] Mov2 블록 팔레트를 연결하기 위한 설정
+    [Header("Moving Version (Mov2) (Optional)")]
+    [Tooltip("이 팔레트의 '움직이는(Mov2) 버전' 팔레트를 여기에 연결합니다.")]
+    public PlatformPalette movingVersionPalette;
+    [Tooltip("움직이는(Mov2) 블록이 사용될 확률(%)")]
+    [Range(0, 100)] public int movingChance = 0;
+
     public GameObject GetPrefab(BlockColor c)
     {
         return c switch

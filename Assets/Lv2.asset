@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
-  m_Name: PD_Spring
+  m_Name: Lv2
   m_EditorClassIdentifier: 
   prefabGreen: {fileID: 4035714313487784480, guid: 6f9af680672a37b49be2a68b23ae449c, type: 3}
   prefabYellow: {fileID: 4035714313487784480, guid: c633e64675198364c9a97d3468a0274d, type: 3}
   prefabBlue: {fileID: 4035714313487784480, guid: c2c8c72a3a678074a94b6086efb24835, type: 3}
   prefabOrange: {fileID: 4035714313487784480, guid: 91601c1179be3404bb11649744b190af, type: 3}
   spikeVersionPalette: {fileID: 11400000, guid: 597932a93f74c9849b5d56f948dea031, type: 2}
-  spikeChance: 0
+  spikeChance: 20
   springVersionAsset: {fileID: 11400000, guid: 5978d1720007dfe42a3b4a71aa6a2631, type: 2}
-  springChance: 30
+  springChance: 10

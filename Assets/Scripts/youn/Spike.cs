@@ -57,6 +57,15 @@ public class Spike : MonoBehaviour
         var controller = other.GetComponentInParent<PlayerController2D>();
         if (!controller) return;
 
+        // -----  [누락된 부분] ⬇️ -----
+        // PlayerHP를 찾아 시각적 피격 효과를 먼저 호출합니다.
+        var playerHP = controller.GetComponent<PlayerHP>();
+        if (playerHP)
+        {
+            playerHP.TriggerHitReaction(); // 'alienGreen_hit' 스프라이트 변경 호출
+        }
+        // ----- [여기까지 추가] ⬆️ -----
+
         var rb = controller.GetComponent<Rigidbody2D>();
         if (!rb) return;
 

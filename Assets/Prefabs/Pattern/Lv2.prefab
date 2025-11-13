@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5624611043711586518}
   - component: {fileID: 6126124071588772758}
   m_Layer: 0
-  m_Name: SB_Spike
+  m_Name: Lv2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   palettes:
-  - {fileID: 11400000, guid: e956b15def9b5d5479c189022d44ccf6, type: 2}
+  - {fileID: 11400000, guid: 0b93a26dd43c0c64f93d93538699b237, type: 2}
   coinPrefab: {fileID: 5047054674502725462, guid: 8741e4de972358046bac090a85214423, type: 3}
   coinSpawnChance: 5
   coinYOffset: 1
