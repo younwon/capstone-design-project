@@ -23,7 +23,7 @@ public class ScoreSystem_Speed : MonoBehaviour
 
     public bool IsNewRecord { get; private set; }
 
-    private bool hasUnlocked = false;
+    private bool hasUnlocked50M = false;
 
     // 내부
     float _runTimer;
@@ -65,10 +65,10 @@ public class ScoreSystem_Speed : MonoBehaviour
         int cur = Mathf.FloorToInt(curMeters);
         if (cur != CurrentScore) CurrentScore = cur;
 
-        if (cur >= 5 && !hasUnlocked)
+        if (cur >= 50 && !hasUnlocked50M)
         {
-            hasUnlocked = true;
-            AchievementManager.Instance.UnlockAchievement("TEST");
+            hasUnlocked50M = true;
+            AchievementManager.Instance.UnlockAchievement("SPEEDRUN 50M");
             Debug.Log("업적 달성");
         }
 
