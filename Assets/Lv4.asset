@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
+  m_Name: Lv4
+  m_EditorClassIdentifier: 
+  prefabGreen: {fileID: 5584463607895429125, guid: 775f77d3bc868ea4494c81f61fce471b, type: 3}
+  prefabYellow: {fileID: 8967399620975440260, guid: 50e6692860f6fe24b9f219b9645f3805, type: 3}
+  prefabBlue: {fileID: 6988686293949726229, guid: 70d850f55f4795a468f602a77942fc78, type: 3}
+  prefabOrange: {fileID: 8408599352171378806, guid: 52104b6b1d067bf498b977e6ce74ddf1, type: 3}
+  spikeVersionPalette: {fileID: 0}
+  spikeChance: 0
+  springVersionAsset: {fileID: 0}
+  springChance: 0
+  movingVersionPalette: {fileID: 0}
+  movingChance: 0
+  movingSpikeVersionPalette: {fileID: 0}
+  movingSpikeChance: 0
+  movingSpringVersionAsset: {fileID: 11400000, guid: f0f16219a84a4844e947d3dcdd4e84a7, type: 2}
+  movingSpringChance: 20

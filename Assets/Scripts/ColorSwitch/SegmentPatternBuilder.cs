@@ -207,6 +207,28 @@ public class SegmentPatternBuilder : MonoBehaviour
                 prefab = spikePalette.GetPrefab(pick); // 'pick'된 색상에 맞는 가시 블록을 가져옴
             }
 
+            // 3. Mov2 블록 확률 다음으로 체크
+            else if (paletteToUse.movingVersionPalette != null && Random.Range(0, 100) < paletteToUse.movingChance)
+            {
+                // Mov2 팔레트로 교체
+                var movingPalette = paletteToUse.movingVersionPalette;
+                // 'pick'된 색상에 맞는 움직이는 블록을 가져옴
+                prefab = movingPalette.GetPrefab(pick);
+            }
+
+            // 4. [신규 추가] 움직이는 가시 블록 확률 체크
+            else if (paletteToUse.movingSpikeVersionPalette != null && Random.Range(0, 100) < paletteToUse.movingSpikeChance)
+            {
+                var movingSpikePalette = paletteToUse.movingSpikeVersionPalette;
+                prefab = movingSpikePalette.GetPrefab(pick);
+            }
+            // 5. [신규 추가] 움직이는 스프링 블록 확률 체크
+            else if (currentPoint.allowSpring && paletteToUse.movingSpringVersionAsset != null && Random.Range(0f, 100f) < paletteToUse.movingSpringChance)
+            {
+                prefab = paletteToUse.movingSpringVersionAsset.GetPrefab();
+                isSpringBlock = true; // 움직이는 스프링도 코인 생성 X
+            }
+
             // 3. 스프링/가시 둘 다 당첨되지 않았으면 일반 프리팹 사용
             if (prefab == null)
             {
