@@ -26834,7 +26834,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fc50543c6f2bf44298293d1af07ed1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hatImage: {fileID: 960833490}
+  spriteRenderer: {fileID: 0}
+  playerAnimator: {fileID: 0}
+  defaultAnimatorController: {fileID: 0}
 --- !u!1 &2129853957
 GameObject:
   m_ObjectHideFlags: 0

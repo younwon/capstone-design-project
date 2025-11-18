@@ -12,6 +12,9 @@ public class ShopItemData : ScriptableObject
     [Header("Player Accessory")]
     public Sprite playerAccessorySprite; // 플레이어에게 씌울 모자 스프라이트
 
+    [Tooltip("기본 애니메이션을 덮어쓸 오버라이드 컨트롤러. 없으면 기본값 유지.")]
+    public AnimatorOverrideController animatorOverride;
+
     [Header("업적 조건")]
     [Tooltip("이 아이템을 구매/장착하기 위해 필요한 업적 ID. 비워두면 조건 없음.")]
     public string requiredAchievementId;

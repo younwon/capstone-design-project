@@ -2,71 +2,101 @@ using UnityEngine;
 
 public class PlayerHat : MonoBehaviour
 {
-    public static PlayerHat Instance;
+    private static PlayerHat _instance;
+    public static PlayerHat Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<PlayerHat>();
+                if (_instance == null)
+                {
+                    // 씬에 없으면 새로 생성하지 않고 null 리턴 (플레이어 없는 씬 고려)
+                    return null;
+                }
+            }
+            return _instance;
+        }
+    }
 
-    public SpriteRenderer hatImage;
-    private ShopItemData equippedHat = null;
+    [Header("Components")]
+    public SpriteRenderer spriteRenderer; // 플레이어의 스프라이트 렌더러
+    public Animator playerAnimator;       // 플레이어의 애니메이터
+
+    [Header("Defaults")]
+    // 아이템을 벗었을 때 돌아갈 기본 애니메이션 컨트롤러
+    public RuntimeAnimatorController defaultAnimatorController;
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        // 컴포넌트 자동 할당 (없을 경우)
+        if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+        if (playerAnimator == null) playerAnimator = GetComponent<Animator>();
+
+        // 시작 시 기본 컨트롤러 저장 (나중에 벗기 기능을 위해)
+        if (playerAnimator != null && defaultAnimatorController == null)
+        {
+            defaultAnimatorController = playerAnimator.runtimeAnimatorController;
         }
     }
 
     private void Start()
     {
-        if (ShopManager.Instance != null)
+        // ShopManager가 준비되었으면 데이터 요청 (기존 로직)
+        if (ShopManager.Instance != null && !string.IsNullOrEmpty(ShopManager.Instance.equippedHatName))
         {
-            string equippedHatName = ShopManager.Instance.equippedHatName;
-            if (!string.IsNullOrEmpty(equippedHatName))
-            {
-                // ★★★ 이름으로 ShopItemData를 찾습니다.
-                ShopItemData hatData = ShopManager.Instance.FindHatDataByName(equippedHatName);
-                if (hatData != null)
-                {
-                    EquipHat(hatData);
-                }
-            }
+            // ShopManager의 DeliverEquippedHatData가 호출되기를 기다리거나,
+            // 여기서 직접 요청할 수도 있습니다. (기존 흐름 유지)
         }
     }
 
+    // 아이템 장착 (스프라이트 + 애니메이션 변경)
     public void EquipHat(ShopItemData itemData)
     {
-        if (hatImage == null)
+        if (itemData == null) return;
+
+        // 1. 스프라이트 변경 (기존 기능)
+        if (itemData.playerAccessorySprite != null && spriteRenderer != null)
         {
-            Debug.LogError("EquipHat 실패: 'Hat Image' 필드가 null입니다. 유니티 에디터에서 연결해주세요.");
-            return;
+            spriteRenderer.sprite = itemData.playerAccessorySprite;
         }
-        if (itemData != null && itemData.playerAccessorySprite != null)
+
+        // 2. 애니메이션 변경 (새 기능)
+        if (itemData.animatorOverride != null && playerAnimator != null)
         {
-            hatImage.sprite = itemData.playerAccessorySprite;
-            hatImage.gameObject.SetActive(true);
-            equippedHat = itemData;
+            playerAnimator.runtimeAnimatorController = itemData.animatorOverride;
         }
-        else
+        // 만약 아이템에 애니메이션은 없고 스프라이트만 있다면 기본 애니메이션 유지
+        else if (playerAnimator != null)
         {
-            UnequipHat();
+            // 필요하다면 여기서 defaultAnimatorController로 되돌릴 수도 있음
+            // playerAnimator.runtimeAnimatorController = defaultAnimatorController;
         }
+
+        Debug.Log($"[PlayerHat] {itemData.itemName} 장착 완료 (애니메이션 교체 포함)");
     }
 
+    // ★★★ 아이템 벗기 (기본 상태로 복구) ★★★
     public void UnequipHat()
     {
-        if (hatImage != null)
-        {
-            hatImage.gameObject.SetActive(false);
-            equippedHat = null;
-        }
-    }
+        // 1. 스프라이트 초기화 (필요시 null 혹은 기본 스프라이트로)
+        // spriteRenderer.sprite = defaultSprite; // 기본 스프라이트가 있다면
 
-    public bool IsEquipped(ShopItemData itemData)
-    {
-        return equippedHat == itemData;
+        // 2. 애니메이션 초기화 (원래 컨트롤러로 복구)
+        if (playerAnimator != null && defaultAnimatorController != null)
+        {
+            playerAnimator.runtimeAnimatorController = defaultAnimatorController;
+        }
+
+        Debug.Log("[PlayerHat] 아이템 해제 완료");
     }
 }
