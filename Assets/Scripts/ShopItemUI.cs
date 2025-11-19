@@ -47,7 +47,7 @@ public class ShopItemUI : MonoBehaviour
         {
             //  업적 달성 시: 기존 구매/장착 로직 실행
             if (lockOverlay != null) lockOverlay.SetActive(false);
-            priceText.gameObject.SetActive(true);
+            if (priceText) priceText.gameObject.SetActive(true);
 
             bool isPurchased = PlayerPrefs.GetInt(itemData.itemName, 0) == 1;
 
@@ -56,7 +56,7 @@ public class ShopItemUI : MonoBehaviour
                 // 구매 완료 상태
                 purchaseButton.interactable = true;
                 bool isEquipped = ShopManager.Instance.equippedHatName == itemData.itemName;
-                buttonText.text = isEquipped ? "O" : "X";
+                buttonText.text = isEquipped ? "X" : "O";
                 
                 purchaseButton.onClick.RemoveAllListeners();
                 purchaseButton.onClick.AddListener(EquipItem);
@@ -65,6 +65,7 @@ public class ShopItemUI : MonoBehaviour
             {
                 // 구매 가능 상태
                 buttonText.text = "BUY";
+                purchaseButton.interactable = true;
                 // 코인이 충분한지 확인하여 버튼 활성화/비활성화
                 purchaseButton.interactable = CoinManager.Instance.GetCoinCount() >= itemData.itemCost;
 
@@ -89,8 +90,35 @@ public class ShopItemUI : MonoBehaviour
     // 아이템 장착
     private void EquipItem()
     {
-        ShopManager.Instance.equippedHatName = itemData.itemName;
+        // 이미 내가 장착 중이라면? -> 해제(Unequip)
+        if (ShopManager.Instance.equippedHatName == itemData.itemName)
+        {
+            ShopManager.Instance.equippedHatName = ""; // 이름 비우기
+            PlayerPrefs.SetString("EquippedHatName", "");
+        }
+        // 다른 걸 끼고 있거나 아무것도 안 꼈다면? -> 장착(Equip)
+        else
+        {
+            ShopManager.Instance.equippedHatName = itemData.itemName;
+            PlayerPrefs.SetString("EquippedHatName", itemData.itemName);
+        }
+
+        PlayerPrefs.Save();
+
+        // 1. 상점 UI 전체 갱신 (O, X 표시 업데이트)
         ShopManager.Instance.UpdateAllItemButtons();
-        // 실제 플레이어에게 아이템 적용하는 로직 호출
+
+        // 2. 현재 씬에 플레이어가 있다면 즉시 외형/애니메이션 변경 적용 (미리보기)
+        if (PlayerHat.Instance != null)
+        {
+            // ShopManager가 가지고 있는 데이터를 통해 PlayerHat 갱신
+            // (ShopManager에 있는 아이템 찾기 로직 활용)
+            var hatData = ShopManager.Instance.FindHatDataByName(ShopManager.Instance.equippedHatName);
+
+            if (hatData != null)
+                PlayerHat.Instance.EquipHat(hatData);
+            else
+                PlayerHat.Instance.UnequipHat();
+        }
     }
 }

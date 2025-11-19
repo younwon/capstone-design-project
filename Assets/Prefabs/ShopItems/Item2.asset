@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6700bf935db3364488f4a1d8491792e, type: 3}
   m_Name: Item2
   m_EditorClassIdentifier: 
-  itemName: Test
+  itemName: Test2
   itemDescription: 
-  itemCost: 0
+  itemCost: 10
   itemIcon: {fileID: 21300000, guid: eff1ac9ec3a81a942b59edbd9c26dfa9, type: 3}
   itemPrefab: {fileID: 0}
-  playerAccessorySprite: {fileID: 21300000, guid: 993a91aeb1ecf85418c83db571d274d6, type: 3}
+  playerAccessorySprite: {fileID: 21300000, guid: 40706c1f8a9f3204cb07dee97483bcca, type: 3}
+  specificAnimator: {fileID: 0}
   requiredAchievementId: 

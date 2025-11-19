@@ -3745,6 +3745,64 @@ MonoBehaviour:
   emptyHeart: {fileID: 21300000, guid: 5941910484d28f84b9a7cb5073065a78, type: 3}
   fullColor: {r: 1, g: 1, b: 1, a: 1}
   emptyColor: {r: 1, g: 1, b: 1, a: 0.35}
+--- !u!1 &331552710
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 331552712}
+  - component: {fileID: 331552711}
+  m_Layer: 0
+  m_Name: ShopManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &331552711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 331552710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab935b99b66be854ab67d1131d13e15d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  equippedHatName: 
+  shopContentParent: {fileID: 0}
+  shopItemUIPrefab: {fileID: 7360342449888630023, guid: 73ac1a48cf698994fb25b90265f6c6f6, type: 3}
+  shopItems:
+  - {fileID: 11400000, guid: a01b54aeb45bf3d4cbd2196433f73e12, type: 2}
+  - {fileID: 11400000, guid: fd9f616db6a89254bbf3e9ef0fc33457, type: 2}
+  - {fileID: 11400000, guid: 61f138430156a9649bfc10e50055c399, type: 2}
+  - {fileID: 11400000, guid: 8a2ffdba6faeeb848838aa5f0a235cfb, type: 2}
+  - {fileID: 11400000, guid: d7285ee47aa57dc48a5f6b7fd866cb0d, type: 2}
+  - {fileID: 11400000, guid: ca7868addbaab2c48a60bf9a19d60fb0, type: 2}
+  - {fileID: 11400000, guid: 58cad505e4ceffc4db63ba9cf7e3215b, type: 2}
+  shopDefaultColor: {r: 0.1, g: 0.2, b: 0.4, a: 1}
+  colorClimbShopColor: {r: 0.41568628, g: 0.6627451, b: 0.9019608, a: 1}
+  speedRunShopColor: {r: 0.93333334, g: 0.7372549, b: 0.5254902, a: 1}
+--- !u!4 &331552712
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 331552710}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.2172878, y: 4.5009155, z: -0.01350513}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &331845965
 GameObject:
   m_ObjectHideFlags: 0
@@ -26799,6 +26857,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2128685269}
   - component: {fileID: 2128685270}
+  - component: {fileID: 2128685271}
   m_Layer: 0
   m_Name: PlayerHat
   m_TagString: Untagged
@@ -26834,9 +26893,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fc50543c6f2bf44298293d1af07ed1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
-  playerAnimator: {fileID: 0}
-  defaultAnimatorController: {fileID: 0}
+  targetAnimator: {fileID: 725336825}
+  hatImageRenderer: {fileID: 960833490}
+  defaultAnimator: {fileID: 9100000, guid: 3ded6fd60ff499e4d849fb46a410e1ce, type: 2}
+--- !u!95 &2128685271
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2128685268}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 3ded6fd60ff499e4d849fb46a410e1ce, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &2129853957
 GameObject:
   m_ObjectHideFlags: 0
@@ -27651,3 +27731,4 @@ SceneRoots:
   - {fileID: 711041535}
   - {fileID: 317235280}
   - {fileID: 3221236931675714659}
+  - {fileID: 331552712}

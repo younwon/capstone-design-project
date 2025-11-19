@@ -15,7 +15,8 @@ MonoBehaviour:
   itemName: Test2
   itemDescription: REACH 150M
   itemCost: 0
-  itemIcon: {fileID: 21300000, guid: 3313d367536805d40a7a2b51e9eaf288, type: 3}
+  itemIcon: {fileID: 0}
   itemPrefab: {fileID: 0}
-  playerAccessorySprite: {fileID: 21300000, guid: c24bdce6d10c5bc4c9cdb42f470b4303, type: 3}
+  playerAccessorySprite: {fileID: 0}
+  specificAnimator: {fileID: 9100000, guid: 12791b85ceefe4b4687902be0f8363ff, type: 2}
   requiredAchievementId: REACH 150M

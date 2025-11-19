@@ -27,6 +27,7 @@ public class ShopManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            equippedHatName = PlayerPrefs.GetString("EquippedHatName", "");
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             if (Camera.main != null)
@@ -97,16 +98,9 @@ public class ShopManager : MonoBehaviour
 
         }
     }
-
-    private void Start()
-    {
-        // Start()에서는 이제 상점 UI를 초기화하지 않습니다.
-        // OnSceneLoaded() 함수에서 처리합니다.
-    }
-
     private void ClearAllShopItems()
     {
-        if (shopContentParent != null) // ★★★ null 체크 추가
+        if (shopContentParent != null)
         {
             foreach (Transform child in shopContentParent)
             {
@@ -118,7 +112,7 @@ public class ShopManager : MonoBehaviour
 
     private void PopulateShop()
     {
-        if (shopContentParent == null) return; // ★★★ null 체크 추가
+        if (shopContentParent == null) return;
 
         foreach (ShopItemData itemData in shopItems)
         {
@@ -134,7 +128,7 @@ public class ShopManager : MonoBehaviour
 
     public void UpdateAllItemButtons()
     {
-        if (allShopItemUIs.Count == 0) return; // ★★★ 빈 리스트일 때 오류 방지
+        if (allShopItemUIs.Count == 0) return; // 빈 리스트일 때 오류 방지
 
         foreach (ShopItemUI itemUI in allShopItemUIs)
         {
