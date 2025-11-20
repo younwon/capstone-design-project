@@ -147,25 +147,32 @@ public class TitleUIController : MonoBehaviour
 
     public void BeginGame()
     {
+        // 1. [수정] 가장 먼저 시작했는지 검사 
         if (StartGate.GameStarted) return;
 
+        // 2. 시간 정지 해제 (이거 없으면 캐릭터 안 움직임)
+        Time.timeScale = 1f;
+
+        // 3. 배경음악 재생
         if (BgmController.I) BgmController.I.PlayInGame();
 
-        // 인게임 UI 켜기
+        // 4. 인게임 UI 켜기
         if (inGameUI && !inGameUI.activeSelf) inGameUI.SetActive(true);
 
-        // 스포너 리셋 + 활성화(초기 세그먼트 다시 생성)
+        // 5. 스포너 리셋 + 활성화
         if (segmentSpawner)
         {
             segmentSpawner.enabled = true;
             segmentSpawner.ResetAndFill();
         }
 
-        // 타이틀 끄고 진행 on
+        // 6. 타이틀 패널 끄기
         if (titlePanel && titlePanel.activeSelf) titlePanel.SetActive(false);
+
+        // 7. [중요] 모든 준비가 끝난 뒤에 "게임 시작 상태"로 변경!
         StartGate.EnableGameplay();
 
-        // StartCatcher 클릭 막기
+        // 8. StartCatcher 클릭 막기
         if (startCatcherGroup)
         {
             startCatcherGroup.interactable = false;
@@ -174,7 +181,6 @@ public class TitleUIController : MonoBehaviour
 
         var cd = FindObjectOfType<CountDown>(true);
         if (cd) cd.PrepareForRun();
-
     }
 
     // 재시작(타이틀 스킵)용: 바로 인게임으로
@@ -262,7 +268,7 @@ public class TitleUIController : MonoBehaviour
         FadeRouter.Load(target, skipTitleOnce: false);
     }
 
-    void ArmStartCatcher()
+    public void ArmStartCatcher()
     {
         if (!startCatcher) return;
 
