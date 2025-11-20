@@ -181,8 +181,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   knockbackForce: {x: 5, y: 7}
-  effectCooldown: 1
+  resetVelocityBeforeKnockback: 1
   controlDisableDuration: 0.5
+  zeroHorizontalOnLock: 1
+  sfxHit: {fileID: 0}
+  usePlayerTag: 0
 --- !u!1 &2545289306486072521
 GameObject:
   m_ObjectHideFlags: 0
@@ -530,8 +533,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   knockbackForce: {x: 5, y: 7}
-  effectCooldown: 1
+  resetVelocityBeforeKnockback: 1
   controlDisableDuration: 0.5
+  zeroHorizontalOnLock: 1
+  sfxHit: {fileID: 0}
+  usePlayerTag: 0
 --- !u!1 &4817542702064799445
 GameObject:
   m_ObjectHideFlags: 0
