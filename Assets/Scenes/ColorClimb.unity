@@ -1567,7 +1567,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: VIBRATION
+  m_text: window
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 76e10c7c17d247940ac859c967d2244f, type: 2}
   m_sharedMaterial: {fileID: 7103384679903197831, guid: 76e10c7c17d247940ac859c967d2244f, type: 2}
