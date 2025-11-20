@@ -9789,7 +9789,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fc50543c6f2bf44298293d1af07ed1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hatImage: {fileID: 958221179}
+  targetAnimator: {fileID: 0}
+  hatImageRenderer: {fileID: 0}
+  defaultAnimator: {fileID: 0}
 --- !u!1001 &836385863
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15622,7 +15624,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1510217466}
         m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
         m_MethodName: GoToShop
         m_Mode: 1

@@ -25,4 +25,4 @@ MonoBehaviour:
   movingSpikeVersionPalette: {fileID: 0}
   movingSpikeChance: 0
   movingSpringVersionAsset: {fileID: 11400000, guid: f0f16219a84a4844e947d3dcdd4e84a7, type: 2}
-  movingSpringChance: 20
+  movingSpringChance: 5

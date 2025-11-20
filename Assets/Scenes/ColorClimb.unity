@@ -5314,7 +5314,7 @@ MonoBehaviour:
   speedRange: {x: 0.2, y: 0.6}
   scaleRange: {x: 0.6, y: 1.2}
   bandWidthMul: 2
-  densityFalloffStart: 45
+  densityFalloffStart: 40
   densityFalloffEnd: 58
   sortingLayerName: BackgroundNear
   sortingOrder: -100
@@ -21928,7 +21928,7 @@ MonoBehaviour:
   tiers:
   - minMeters: 0
     entries:
-    - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
+    - prefab: {fileID: 6801262862034987100, guid: dc1fff9b497fb174c92479ef63cc8193, type: 3}
       weight: 100
   - minMeters: 3
     entries:
@@ -21945,6 +21945,10 @@ MonoBehaviour:
   - minMeters: 25
     entries:
     - prefab: {fileID: 6801262862034987100, guid: 79c794f1718f82f4aaf83f2b99a4c3a0, type: 3}
+      weight: 100
+  - minMeters: 40
+    entries:
+    - prefab: {fileID: 6801262862034987100, guid: dc1fff9b497fb174c92479ef63cc8193, type: 3}
       weight: 100
   - minMeters: 40
     entries:
@@ -27283,6 +27287,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3577453232402795413, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
+      propertyPath: m_text
+      value: shop
+      objectReference: {fileID: 0}
     - target: {fileID: 3686428879591953425, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0.5
@@ -27590,6 +27598,12 @@ PrefabInstance:
     - target: {fileID: 8286878389947545967, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8438518242413802820, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
+      propertyPath: m_text
+      value: '
+
+        Quit the game?'
       objectReference: {fileID: 0}
     - target: {fileID: 8479569741177716954, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: m_AnchorMax.y
