@@ -268,6 +268,8 @@ public class TitleUIController : MonoBehaviour
         FadeRouter.Load(target, skipTitleOnce: false);
     }
 
+    // StartCatcher 활성화
+    // public으로 변경하여 외부에서 호출 가능하게 함
     public void ArmStartCatcher()
     {
         if (!startCatcher) return;
