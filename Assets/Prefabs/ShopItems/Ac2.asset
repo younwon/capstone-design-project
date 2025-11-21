@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6700bf935db3364488f4a1d8491792e, type: 3}
   m_Name: Ac2
   m_EditorClassIdentifier: 
-  itemName: Test2
+  itemName: Headset B
   itemDescription: REACH 100M
   itemCost: 0
-  itemIcon: {fileID: 0}
+  itemIcon: {fileID: 21300000, guid: 543788d8986e85f4797d15895e02f136, type: 3}
   itemPrefab: {fileID: 0}
   playerAccessorySprite: {fileID: 0}
-  specificAnimator: {fileID: 9100000, guid: c760d993d3074f84abf796957bffeb7f, type: 2}
+  specificAnimator: {fileID: 9100000, guid: a6c48ae040917ce43b02dbd40844ad6b, type: 2}
   requiredAchievementId: REACH 100M

@@ -3759,6 +3759,7 @@ MonoBehaviour:
   shopContentParent: {fileID: 0}
   shopItemUIPrefab: {fileID: 7360342449888630023, guid: 73ac1a48cf698994fb25b90265f6c6f6, type: 3}
   shopItems:
+  - {fileID: 11400000, guid: 04dc573230e8a8240b8454e59f4843f6, type: 2}
   - {fileID: 11400000, guid: a01b54aeb45bf3d4cbd2196433f73e12, type: 2}
   - {fileID: 11400000, guid: fd9f616db6a89254bbf3e9ef0fc33457, type: 2}
   - {fileID: 11400000, guid: 61f138430156a9649bfc10e50055c399, type: 2}
@@ -11463,6 +11464,7 @@ MonoBehaviour:
   - REACH 150M
   - SPEEDRUN 50M
   allShopItems:
+  - {fileID: 11400000, guid: 04dc573230e8a8240b8454e59f4843f6, type: 2}
   - {fileID: 11400000, guid: a01b54aeb45bf3d4cbd2196433f73e12, type: 2}
   - {fileID: 11400000, guid: fd9f616db6a89254bbf3e9ef0fc33457, type: 2}
   - {fileID: 11400000, guid: 61f138430156a9649bfc10e50055c399, type: 2}
