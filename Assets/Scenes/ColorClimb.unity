@@ -8248,6 +8248,7 @@ MonoBehaviour:
   sfxTick: {fileID: 8300000, guid: d43aeca51003ac0498f5a5462bdf3f8c, type: 3}
   sfxConfirm: {fileID: 0}
   tickInterval: 0.05
+  sfxButtonClick: {fileID: 8300000, guid: d43aeca51003ac0498f5a5462bdf3f8c, type: 3}
   flashMaxAlpha: 0.309
   flashDuration: 0.6
   countThisDuration: 1.2
@@ -12603,7 +12604,6 @@ GameObject:
   - component: {fileID: 1127482018}
   - component: {fileID: 1127482017}
   - component: {fileID: 1127482016}
-  - component: {fileID: 1127482021}
   m_Layer: 5
   m_Name: Btn_OpenHome
   m_TagString: Untagged
@@ -12752,20 +12752,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1127482014}
   m_CullTransparentMesh: 1
---- !u!114 &1127482021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1127482014}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90e3eaf46c99e544188a60ecab9b2fc3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clickClip: {fileID: 0}
-  hoverClip: {fileID: 0}
 --- !u!1 &1140724808
 GameObject:
   m_ObjectHideFlags: 0
@@ -15007,7 +14993,7 @@ MonoBehaviour:
   maxAlpha: 0.115
   visualFadeSpeed: 8
   shakeAtFull: 0.22
-  lavaBoilLoop: {fileID: 8300000, guid: dce3ec009e19a0044bd65b162cd86d4c, type: 3}
+  lavaBoilLoop: {fileID: 8300000, guid: 0297e57731932ab4189ae29cf458f047, type: 3}
   audioLerpSpeed: 10
   audioLead: 0.18
   minPitch: 0.92
@@ -21504,7 +21490,6 @@ GameObject:
   - component: {fileID: 1688528682}
   - component: {fileID: 1688528681}
   - component: {fileID: 1688528680}
-  - component: {fileID: 1688528685}
   m_Layer: 5
   m_Name: Btn_Restart
   m_TagString: Untagged
@@ -21653,20 +21638,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1688528678}
   m_CullTransparentMesh: 1
---- !u!114 &1688528685
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1688528678}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90e3eaf46c99e544188a60ecab9b2fc3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clickClip: {fileID: 0}
-  hoverClip: {fileID: 0}
 --- !u!1 &1692000662
 GameObject:
   m_ObjectHideFlags: 0
@@ -22514,8 +22485,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 750b326c3e82b5f4fa6c5576ac418a18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultClick: {fileID: 8300000, guid: d43aeca51003ac0498f5a5462bdf3f8c, type: 3}
-  hookInactiveToo: 1
+  defaultClickClip: {fileID: 8300000, guid: d43aeca51003ac0498f5a5462bdf3f8c, type: 3}
+  dontDestroyOnLoad: 1
+  rebindInterval: 0.5
 --- !u!4 &1769051116
 Transform:
   m_ObjectHideFlags: 0

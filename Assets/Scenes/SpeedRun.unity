@@ -22123,6 +22123,10 @@ MonoBehaviour:
   bestValueText: {fileID: 0}
   defaultSeconds: 60
   timeRemaining: 60
+  sfxTickTock: {fileID: 8300000, guid: 3846d36dbccb93f49ae1a503ade24a30, type: 3}
+  normalPitch: 1
+  fastPitch: 1.5
+  pitchLerpSpeed: 8
 --- !u!1 &1716837394
 GameObject:
   m_ObjectHideFlags: 0

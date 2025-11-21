@@ -36,7 +36,7 @@ public class GameOverUI_SpeedRun : MonoBehaviour
     [Tooltip("★ 신기록일 때만 재생되는 효과음 (NEW RECORD SFX)")]
     [SerializeField] AudioClip sfxBestRecord;
 
-    [SerializeField, Tooltip("틱 사운드 간격(초). 0이면 매 프레임 시도")]
+    [SerializeField, Tooltip("틱 사운드 간격(초). 0이면 값이 바뀔 때마다 재생")]
     float tickInterval = 0.05f;
 
     [Header("Flash Tuning")]
@@ -105,12 +105,8 @@ public class GameOverUI_SpeedRun : MonoBehaviour
 
             cachedBestTime = "--:--";
 
-            // ===== [핵심 수정] 신기록 판정 안정화 =====
-            bool computedNew = cachedThisRun > cachedBest;      // 계산 기반
-            bool flagNew = speed.IsNewRecord;                   // 시스템 플래그 기반
-
-            // best가 이미 갱신되어 thisRun==best가 된 케이스도 플래그로 인정
-            // 플래그가 스테일 true인데 thisRun<best면 무시
+            bool computedNew = cachedThisRun > cachedBest;
+            bool flagNew = speed.IsNewRecord;
             cachedIsNew = computedNew || (flagNew && cachedThisRun >= cachedBest);
         }
         else
@@ -130,7 +126,7 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         while (t < uiDelay) { t += Time.unscaledDeltaTime; yield return null; }
 
         Show();
-        Time.timeScale = 0f; // UI가 뜬 뒤 정지
+        Time.timeScale = 0f;
         StartCoroutine(Sequence_CountUp_ThenFX());
     }
 
@@ -153,6 +149,7 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         }
     }
 
+    // ========= [여기만 클래식 방식으로 싱크 수정] =========
     IEnumerator CountUpNumber(TMP_Text target, int from, int to, float duration)
     {
         if (!target) yield break;
@@ -167,26 +164,27 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         float t = 0f;
         float tickTimer = 0f;
 
+        // ★ 핵심: 이전 값 기억해서 "값이 바뀌는 순간"에만 틱
+        int lastValue = from - 1;
+
         while (t < duration)
         {
             t += Time.unscaledDeltaTime;
+            tickTimer += Time.unscaledDeltaTime;
+
             float k = Mathf.Clamp01(t / duration);
             if (easeOut) k = 1f - (1f - k) * (1f - k);
 
             int value = Mathf.RoundToInt(Mathf.Lerp(from, to, k));
-            target.text = $"{value} m";
 
-            // Tick 사운드
-            if (AudioManager.I && sfxTick)
+            if (value != lastValue)
             {
-                if (tickInterval <= 0f)
+                lastValue = value;
+                target.text = $"{value} m";
+
+                if (AudioManager.I && sfxTick)
                 {
-                    AudioManager.I.PlaySFX(sfxTick);
-                }
-                else
-                {
-                    tickTimer += Time.unscaledDeltaTime;
-                    if (tickTimer >= tickInterval)
+                    if (tickInterval <= 0f || tickTimer >= tickInterval)
                     {
                         tickTimer = 0f;
                         AudioManager.I.PlaySFX(sfxTick);
@@ -199,10 +197,10 @@ public class GameOverUI_SpeedRun : MonoBehaviour
 
         target.text = $"{to} m";
 
-        // 완료음
         if (AudioManager.I && sfxConfirm)
             AudioManager.I.PlaySFX(sfxConfirm);
     }
+    // =====================================================
 
     void Show()
     {
@@ -218,7 +216,6 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         IsShown = true;
 
         if (GlobalButtonSFX.I) GlobalButtonSFX.I.Refresh();
-
     }
 
     void HideImmediate()
@@ -234,7 +231,6 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         hiddenList.Clear();
     }
 
-    // ===== 버튼 =====
     public void OnClickRestart()
     {
         Time.timeScale = 1f;
@@ -257,13 +253,11 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         SceneManager.LoadScene(sc.buildIndex);
     }
 
-    // ===== FX =====
     void PlayNewRecordFX()
     {
         if (flashOverlay) StartCoroutine(FlashWhite(flashOverlay, flashMaxAlpha, flashDuration));
         if (newRecordBanner) StartCoroutine(BlinkBanner(newRecordBanner));
 
-        // ★ 신기록일 때만 sfxBestRecord 재생
         if (AudioManager.I && sfxBestRecord)
             AudioManager.I.PlaySFX(sfxBestRecord);
     }
@@ -307,6 +301,7 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         banner.gameObject.SetActive(false);
     }
 }
+
 
 
 

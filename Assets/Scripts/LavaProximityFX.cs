@@ -1,4 +1,4 @@
-// LavaProximityFX.cs 교체/업데이트
+// LavaProximityFX.cs
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -57,26 +57,26 @@ public class LavaProximityFX : MonoBehaviour
         lavaSource.pitch = minPitch;
         lavaSource.clip = lavaBoilLoop;
 
-        // ★ 추가 — SFC 설정 반영되도록 믹서 그룹 적용
-        if (AudioManager.I && AudioManager.I.SfxGroup)
-            lavaSource.outputAudioMixerGroup = AudioManager.I.SfxGroup;
+        TryBindMixerGroup();
 
         if (audibleExit > audibleEnter) audibleExit = audibleEnter * 0.5f;
     }
-
 
     void OnEnable()
     {
         SimpleGameOver.OnGameOver += HandleGameOver;
         PlayerDeath.OnPlayerDied += HandlePlayerDied;
-        GameOverUI.OnShown += HandleGameOverUIShown;   // [ADD]
+        GameOverUI.OnShown += HandleGameOverUIShown;
+
+        // 혹시 AudioManager가 Awake 이후에 생겼을 수도 있으니 여기서도 한 번 더 연결
+        TryBindMixerGroup();
     }
 
     void OnDisable()
     {
         SimpleGameOver.OnGameOver -= HandleGameOver;
         PlayerDeath.OnPlayerDied -= HandlePlayerDied;
-        GameOverUI.OnShown -= HandleGameOverUIShown;   // [ADD]
+        GameOverUI.OnShown -= HandleGameOverUIShown;
     }
 
     void LateUpdate()
@@ -102,18 +102,30 @@ public class LavaProximityFX : MonoBehaviour
         // Gate
         HandleAudibleGate(tVisual);
 
+        // ====== SFX 설정 값 가져오기 (믹서 없어도 먹게끔) ======
+        float sfxMix = 1f;
+        if (AudioManager.I != null)
+            sfxMix = Mathf.Clamp01(AudioManager.I.masterVolume * AudioManager.I.sfxVolume);
+
+        // sfxMix가 0이면 그냥 꺼버림 (Mute/슬라이더 0 즉시 반영)
+        if (sfxMix <= 0.0001f)
+        {
+            if (lavaSource && lavaSource.isPlaying)
+            {
+                lavaSource.volume = 0f;
+                lavaSource.Stop();
+            }
+            return;
+        }
+
         // Audio
         if (_audible && lavaSource && lavaBoilLoop)
         {
             if (!lavaSource.isPlaying) lavaSource.Play();
 
-            float targetVol = tAudio;
-
-            float mix = 1f;
-            if (AudioManager.I)
-                mix = Mathf.Clamp01(AudioManager.I.masterVolume * AudioManager.I.sfxVolume);
-
+            float targetVol = tAudio * sfxMix; // ★ 핵심: SFX 설정 반영
             float targetPitch = Mathf.Lerp(minPitch, maxPitch, tAudio);
+
             lavaSource.volume = Mathf.Lerp(lavaSource.volume, targetVol, Time.deltaTime * audioLerpSpeed);
             lavaSource.pitch = Mathf.Lerp(lavaSource.pitch, targetPitch, Time.deltaTime * audioLerpSpeed);
         }
@@ -129,7 +141,6 @@ public class LavaProximityFX : MonoBehaviour
             if (_exitFadeCo != null) { StopCoroutine(_exitFadeCo); _exitFadeCo = null; }
             lavaSource.volume = 0f;
             lavaSource.pitch = minPitch;
-            // 재생은 LateUpdate에서 처리
             return;
         }
 
@@ -141,10 +152,9 @@ public class LavaProximityFX : MonoBehaviour
         }
     }
 
-    // 게임오버/사망/게임오버UI 표시 모두 페이드아웃으로 통합
     void HandlePlayerDied(Transform _) => StartEndFade();
     void HandleGameOver(string reason) => StartEndFade();
-    void HandleGameOverUIShown() => StartEndFade(); // [ADD]
+    void HandleGameOverUIShown() => StartEndFade();
 
     void StartEndFade()
     {
@@ -161,12 +171,18 @@ public class LavaProximityFX : MonoBehaviour
         float t = 0f;
         while (t < time)
         {
-            t += Time.unscaledDeltaTime; // 정지 중에도 빠지게
+            t += Time.unscaledDeltaTime;
             lavaSource.volume = Mathf.Lerp(start, 0f, t / time);
             yield return null;
         }
         lavaSource.volume = 0f;
         lavaSource.Stop();
+    }
+
+    void TryBindMixerGroup()
+    {
+        if (lavaSource && AudioManager.I && AudioManager.I.SfxGroup)
+            lavaSource.outputAudioMixerGroup = AudioManager.I.SfxGroup;
     }
 
 #if UNITY_EDITOR

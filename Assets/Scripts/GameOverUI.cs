@@ -17,42 +17,45 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] Button btnHome;
 
     [Header("Texts")]
-    [SerializeField] TMP_Text thisValueText;   // ex) "123 m"
-    [SerializeField] TMP_Text bestValueText;   // ex) "456 m"
-    [SerializeField] TMP_Text thisTimeText;    // ex) "00:45"
-    [SerializeField] TMP_Text bestTimeText;    // ex) "00:30"
+    [SerializeField] TMP_Text thisValueText;
+    [SerializeField] TMP_Text bestValueText;
+    [SerializeField] TMP_Text thisTimeText;
+    [SerializeField] TMP_Text bestTimeText;
 
     [Header("New Record Visuals")]
-    [SerializeField] GameObject newBadge;             // (선택) NEW 배지 아이콘
-    [SerializeField] TMP_Text newRecordBanner;        // "NEW RECORD!" (비활성 시작)
-    [SerializeField] Image flashOverlay;              // 화면 전체 흰 이미지(알파 0)
+    [SerializeField] GameObject newBadge;
+    [SerializeField] TMP_Text newRecordBanner;
+    [SerializeField] Image flashOverlay;
 
     [Header("SFX (optional)")]
-    [SerializeField] AudioSource sfxSource;           // UI 전용 오디오 소스(PlayOnAwake 꺼짐)
-    [SerializeField] AudioClip sfxNewRecord;          // 신기록 효과음(선택)
+    [SerializeField] AudioSource sfxSource;    // UI 전용 오디오 소스
+    [SerializeField] AudioClip sfxNewRecord;   // 신기록 효과음(선택)
 
-    // ==== [SFX extra] Tick / Confirm ====
-    [SerializeField] AudioClip sfxTick;               // 숫자 카운트 중 '틱' 사운드
-    [SerializeField] AudioClip sfxConfirm;            // 카운트 완료 확정 사운드
+    // ==== Tick / Confirm ====
+    [SerializeField] AudioClip sfxTick;
+    [SerializeField] AudioClip sfxConfirm;
     [SerializeField, Tooltip("틱 사운드 간격(초). 0이면 값이 바뀔 때마다 재생")]
     float tickInterval = 0.05f;
 
+    [Header("Button Click SFX (GameOver only)")]
+    [Tooltip("게임오버 UI의 Restart/Home 클릭음")]
+    [SerializeField] AudioClip sfxButtonClick;
+
     [Header("Flash Tuning")]
-    [SerializeField, Range(0f, 1f)] float flashMaxAlpha = 0.9f; // 플래시 세기
-    [SerializeField] float flashDuration = 0.6f;                // 플래시 길이(초)
+    [SerializeField, Range(0f, 1f)] float flashMaxAlpha = 0.9f;
+    [SerializeField] float flashDuration = 0.6f;
 
     [Header("CountUp Tuning")]
-    [SerializeField] float countThisDuration = 0.6f; // This Run 카운트업 시간
-    [SerializeField] float countBestDuration = 0.6f; // Best 카운트업 시간
-    [SerializeField] bool easeOut = true;            // 끝으로 갈수록 천천히
+    [SerializeField] float countThisDuration = 0.6f;
+    [SerializeField] float countBestDuration = 0.6f;
+    [SerializeField] bool easeOut = true;
 
     [Header("Title/Home Options")]
-    [SerializeField] GameObject titlePanel;           // 같은 씬 타이틀 UI
-    [SerializeField] string titleSceneName = "Title"; // 별도 씬 이름
+    [SerializeField] GameObject titlePanel;
+    [SerializeField] string titleSceneName = "Title";
 
     [Header("Timing")]
-    [SerializeField, Tooltip("게임오버 후 UI가 뜨기까지의 딜레이(초, 실제시간)")]
-    float uiDelay = 0.8f;
+    [SerializeField] float uiDelay = 0.8f;
 
     [Header("Hide these when shown")]
     [SerializeField] GameObject[] hideWhenShown;
@@ -60,7 +63,6 @@ public class GameOverUI : MonoBehaviour
     readonly List<GameObject> hiddenList = new List<GameObject>();
     bool suppressRestoreHUD = false;
 
-    // --- 캐시(게임오버 시점 값) ---
     int cachedThisRun = 0;
     int cachedBest = 0;
     string cachedThisTime = "00:00";
@@ -77,11 +79,18 @@ public class GameOverUI : MonoBehaviour
         if (btnHome) btnHome.onClick.AddListener(OnClickHome);
 
         if (newRecordBanner) newRecordBanner.gameObject.SetActive(false);
-        if (flashOverlay) flashOverlay.color = new Color(1, 1, 1, 0); // 알파 0 시작
+        if (flashOverlay) flashOverlay.color = new Color(1, 1, 1, 0);
 
-        // === 여기 추가: sfxSource를 AudioManager의 SFX 그룹에 자동 연결 ===
-        // (AudioManager에 public AudioMixerGroup SfxGroup { get; } 이 있다고 가정)
-        if (sfxSource && AudioManager.I && AudioManager.I.SfxGroup)
+        // ====== [핵심 추가 1] sfxSource 없으면 자동 생성 ======
+        if (!sfxSource)
+        {
+            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.loop = false;
+        }
+
+        // ====== [핵심 추가 2] AudioManager의 SFX 그룹에 연결 ======
+        if (AudioManager.I && AudioManager.I.SfxGroup)
         {
             sfxSource.outputAudioMixerGroup = AudioManager.I.SfxGroup;
         }
@@ -99,7 +108,6 @@ public class GameOverUI : MonoBehaviour
         IsShown = false;
     }
 
-    // ====== 게임오버 신호 수신 ======
     void OnGameOverSimple(string reason)
     {
         if (ScoreSystem.I)
@@ -127,28 +135,25 @@ public class GameOverUI : MonoBehaviour
         float t = 0f;
         while (t < uiDelay)
         {
-            t += Time.unscaledDeltaTime;   // 실제 시간 기준
+            t += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        // UI 표시 + 이 타이밍에 정지
         Show();
         Time.timeScale = 0f;
 
-        // 시퀀스 실행: 카운트업 → (신기록이면) 연출
         StartCoroutine(Sequence_CountUp_ThenFX());
     }
 
     IEnumerator Sequence_CountUp_ThenFX()
     {
-        // 초기 텍스트
         if (thisTimeText) thisTimeText.text = cachedThisTime;
         if (bestTimeText) bestTimeText.text = cachedBestTime;
 
         if (newBadge) newBadge.SetActive(false);
         if (newRecordBanner) newRecordBanner.gameObject.SetActive(false);
 
-        if (bestValueText) bestValueText.text = ""; // This Run 끝날 때까지 빈 칸
+        if (bestValueText) bestValueText.text = "";
 
         if (thisValueText)
             yield return CountUpNumber(thisValueText, 0, cachedThisRun, countThisDuration);
@@ -163,12 +168,10 @@ public class GameOverUI : MonoBehaviour
         }
     }
 
-    // ====== 숫자 카운트업(단위 m 고정) + Tick/Confirm SFX ======
     IEnumerator CountUpNumber(TMP_Text target, int from, int to, float duration)
     {
         if (!target) yield break;
 
-        // duration이 0이거나 거의 0이면 바로 값 찍고 완료음만
         if (duration <= 0.0001f)
         {
             target.text = $"{to} m";
@@ -178,13 +181,11 @@ public class GameOverUI : MonoBehaviour
 
         float t = 0f;
         float tickTimer = 0f;
-
-        // 이전에 찍힌 값 (처음에는 from - 1로 해서 첫 프레임에 무조건 갱신)
         int lastValue = from - 1;
 
         while (t < duration)
         {
-            t += Time.unscaledDeltaTime;  // 정지 상태에서도 진행
+            t += Time.unscaledDeltaTime;
             tickTimer += Time.unscaledDeltaTime;
 
             float k = Mathf.Clamp01(t / duration);
@@ -192,13 +193,11 @@ public class GameOverUI : MonoBehaviour
 
             int value = Mathf.RoundToInt(Mathf.Lerp(from, to, k));
 
-            // 값이 바뀐 "딱 그 순간"에만 텍스트 갱신 + Tick 사운드
             if (value != lastValue)
             {
                 lastValue = value;
                 target.text = $"{value} m";
 
-                // Tick 사운드 (값이 바뀔 때만, 그리고 tickInterval 간격도 고려)
                 if (AudioManager.I && sfxTick)
                 {
                     if (tickInterval <= 0f || tickTimer >= tickInterval)
@@ -212,17 +211,14 @@ public class GameOverUI : MonoBehaviour
             yield return null;
         }
 
-        // 마지막으로 목표 값 보정
         target.text = $"{to} m";
 
-        // 완료음
         if (AudioManager.I && sfxConfirm)
             AudioManager.I.PlaySFX(sfxConfirm);
     }
 
     public static System.Action OnShown;
 
-    // ====== 표시/숨김 ======
     void Show()
     {
         hiddenList.Clear();
@@ -269,27 +265,24 @@ public class GameOverUI : MonoBehaviour
     // ====== 버튼 ======
     public void OnClickRestart()
     {
-        // 시간/입력 잠금 해제
+        PlayButtonClickSfx();   // ★ [핵심] 여기서 무조건 재생
+
         Time.timeScale = 1f;
         InputLocked = false;
         suppressRestoreHUD = true;
 
-        // 다음 씬 로드 직후 타이틀을 건너뛰고 즉시 인게임으로 진입
         StartGate.SkipTitleOnce = true;
 
-        // UI 레이캐스트 차단 제거
         HideImmediate();
 
-        // 현재 씬 재로드
         var s = SceneManager.GetActiveScene();
         SceneManager.LoadScene(s.buildIndex);
-
-        // FadeRouter 사용 시:
-        // FadeRouter.Load(s.name, skipTitleOnce: true);
     }
 
     public void OnClickHome()
     {
+        PlayButtonClickSfx();   // ★ [핵심] 여기서 무조건 재생
+
         Time.timeScale = 1f;
         InputLocked = false;
         suppressRestoreHUD = true;
@@ -312,13 +305,17 @@ public class GameOverUI : MonoBehaviour
         SceneManager.LoadScene(sc.buildIndex);
     }
 
-    // ====== 신기록 연출(플래시 + 배너 + SFX) ======
+    void PlayButtonClickSfx()
+    {
+        if (sfxSource && sfxButtonClick)
+            sfxSource.PlayOneShot(sfxButtonClick);
+    }
+
     void PlayNewRecordFX()
     {
         if (flashOverlay) StartCoroutine(FlashWhite(flashOverlay, flashMaxAlpha, flashDuration));
-        if (newRecordBanner) StartCoroutine(BannerBlinkLoop(newRecordBanner));   // UI 열려있는 동안 계속 깜빡
+        if (newRecordBanner) StartCoroutine(BannerBlinkLoop(newRecordBanner));
 
-        // (옵션) 사운드 - 이건 GameOverUI 전용 sfxSource로 재생
         if (sfxSource && sfxNewRecord)
             sfxSource.PlayOneShot(sfxNewRecord);
     }
@@ -329,7 +326,6 @@ public class GameOverUI : MonoBehaviour
         float up = dur * 0.4f;
         float down = dur - up;
 
-        // up
         float t = 0f;
         while (t < up)
         {
@@ -339,7 +335,7 @@ public class GameOverUI : MonoBehaviour
             img.color = c;
             yield return null;
         }
-        // down
+
         t = 0f;
         while (t < down)
         {
@@ -357,17 +353,16 @@ public class GameOverUI : MonoBehaviour
         banner.gameObject.SetActive(true);
         float speed = 5f;
         Color baseC = banner.color;
-        while (IsShown) // 패널이 열려 있는 동안 계속 깜빡
+        while (IsShown)
         {
             float a = Mathf.Lerp(0.35f, 1f, (Mathf.Sin(Time.unscaledTime * speed) + 1f) * 0.5f);
             banner.color = new Color(baseC.r, baseC.g, baseC.b, a);
             yield return null;
         }
-        // 닫히면 원복
         banner.color = new Color(baseC.r, baseC.g, baseC.b, 1f);
         banner.gameObject.SetActive(false);
     }
 
-    // ===== Easing =====
     float EaseOutQuad(float x) => 1f - (1f - x) * (1f - x);
 }
+
