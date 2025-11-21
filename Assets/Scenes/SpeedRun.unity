@@ -26749,6 +26749,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Camera_Pillarbox
       objectReference: {fileID: 0}
+    - target: {fileID: 4912639250313323831, guid: 8bc831ed8d61c9c45917aaecc4a4e563, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
