@@ -1,3 +1,4 @@
+// Assets/Scripts/Title/TitleUIController.cs
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,11 +28,14 @@ public class TitleUIController : MonoBehaviour
 
     [Header("Scenes")]
     [SerializeField] string colorClimbScene = "ColorClimb";     // 기존 모드 씬 이름
-    [SerializeField] string speedRunScene = "SpeedRun"; // 타임어택 씬 이름
+    [SerializeField] string speedRunScene = "SpeedRun";         // 타임어택 씬 이름
+
+    [Header("BGM Clips (AudioManager 사용)")]
+    [SerializeField] AudioClip titleBgmClip;      // 타이틀에서 재생할 BGM
+    [SerializeField] AudioClip inGameBgmClip;     // 인게임에서 재생할 BGM
 
     // 내부 캐시(카메라 시작 위치)
     Vector3 _camStartPos;
-
 
     void Awake()
     {
@@ -61,7 +65,6 @@ public class TitleUIController : MonoBehaviour
 
         if (btnRanking)
             btnRanking.onClick.AddListener(OpenRankingPanel);
-
     }
 
     void OnEnable()
@@ -104,7 +107,7 @@ public class TitleUIController : MonoBehaviour
             return;
         }
 
-        // 3) 키보드로도 시작하고 싶으면 (Space/Enter 정도만)
+        // 3) 키보드로도 시작 (Space/Enter)
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
         {
             BeginGame();
@@ -132,8 +135,6 @@ public class TitleUIController : MonoBehaviour
 
         // 타이틀 보이기
         if (titlePanel && !titlePanel.activeSelf) titlePanel.SetActive(true);
-
-        if (titlePanel && !titlePanel.activeSelf) titlePanel.SetActive(true);
         ArmStartCatcher();
 
         // 로고 애니메이션 재시작
@@ -142,37 +143,38 @@ public class TitleUIController : MonoBehaviour
         var cd = FindObjectOfType<CountDown>(true);
         if (cd) cd.PrepareForTitle();
 
-        if (BgmController.I) BgmController.I.PlayTitle();
+        // ==== BGM: 타이틀용 재생 ====
+        PlayTitleBgm();
     }
 
     public void BeginGame()
     {
-        // 1. [수정] 가장 먼저 시작했는지 검사 
+        // 이미 시작 상태면 무시
         if (StartGate.GameStarted) return;
 
-        // 2. 시간 정지 해제 (이거 없으면 캐릭터 안 움직임)
+        // 시간 정지 해제
         Time.timeScale = 1f;
 
-        // 3. 배경음악 재생
-        if (BgmController.I) BgmController.I.PlayInGame();
+        // ==== BGM: 인게임용 재생 ====
+        PlayInGameBgm();
 
-        // 4. 인게임 UI 켜기
+        // 인게임 UI 켜기
         if (inGameUI && !inGameUI.activeSelf) inGameUI.SetActive(true);
 
-        // 5. 스포너 리셋 + 활성화
+        // 스포너 리셋 + 활성화
         if (segmentSpawner)
         {
             segmentSpawner.enabled = true;
             segmentSpawner.ResetAndFill();
         }
 
-        // 6. 타이틀 패널 끄기
+        // 타이틀 패널 끄기
         if (titlePanel && titlePanel.activeSelf) titlePanel.SetActive(false);
 
-        // 7. [중요] 모든 준비가 끝난 뒤에 "게임 시작 상태"로 변경!
+        // 게임 시작 상태로 변경
         StartGate.EnableGameplay();
 
-        // 8. StartCatcher 클릭 막기
+        // StartCatcher 클릭 막기
         if (startCatcherGroup)
         {
             startCatcherGroup.interactable = false;
@@ -186,7 +188,7 @@ public class TitleUIController : MonoBehaviour
     // 재시작(타이틀 스킵)용: 바로 인게임으로
     public void ForceStartImmediately()
     {
-        if (BgmController.I) BgmController.I.PlayInGame();
+        PlayInGameBgm();
 
         if (inGameUI && !inGameUI.activeSelf) inGameUI.SetActive(true);
 
@@ -234,29 +236,23 @@ public class TitleUIController : MonoBehaviour
         // (d) 스코어(세션 값 정리)
         if (score != null)
         {
-            score.ResetRun();        // 러닝 값 초기화(있다면)
-            score.ClearSessionPeak(); // 세션 피크/시간 0으로(우리가 추가한 메서드)
+            score.ResetRun();
+            score.ClearSessionPeak();
         }
     }
 
-    // TitleUIController.cs 안에 아래 메서드만 추가
+    // 모드 전환 버튼
     public void OnClickModeChange()
     {
-        // 현재 모드 토글: ColorClimb -> SpeedRun, SpeedRun -> ColorClimb
         bool gotoSpeedRun = !ModePrefs.IsSpeedRun;
         ModePrefs.IsSpeedRun = gotoSpeedRun;
 
         string target = gotoSpeedRun ? speedRunScene : colorClimbScene;
 
-        // 씬 전환 전에 현재 씬 이름을 SceneTracker에 저장하는 로직 추가
         if (SceneTracker.Instance != null)
         {
-            // 현재 활성화된 씬의 이름을 가져옵니다.
             string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-
-            // SceneTracker에 이전 씬 이름으로 저장합니다.
             SceneTracker.Instance.SetPreviousScene(currentSceneName);
-
             Debug.Log($"[TitleUIController] 이전 씬 저장 완료: {currentSceneName}");
         }
         else
@@ -264,41 +260,42 @@ public class TitleUIController : MonoBehaviour
             Debug.LogError("[TitleUIController] SceneTracker 인스턴스를 찾을 수 없습니다! 메인 씬에 SceneTracker 오브젝트가 있는지 확인하세요.");
         }
 
-        // 다음 씬에서 바로 시작(타이틀 스킵) + 페이드 연출
         FadeRouter.Load(target, skipTitleOnce: false);
     }
 
     // StartCatcher 활성화
-    // public으로 변경하여 외부에서 호출 가능하게 함
     public void ArmStartCatcher()
     {
         if (!startCatcher) return;
 
-        // 버튼 자체 활성/상호작용
         startCatcher.enabled = true;
         startCatcher.interactable = true;
 
-        // 버튼의 그래픽(주로 Image)이 Raycast를 받도록
         var g = startCatcher.targetGraphic;
         if (g) g.raycastTarget = true;
 
-        // 혹시 그룹으로 막아놨다면 해제
         var cg = startCatcher.GetComponentInParent<CanvasGroup>();
         if (cg) { cg.interactable = true; cg.blocksRaycasts = true; }
-
-        // 숨겨진 차폐물(검은 페이드, 팝업 등)이 남아있다면 끄기
-        // (Scene 내에서 사용하는 다른 전면 오브젝트가 있다면 여기서 확실히 Off)
     }
 
     void OpenRankingPanel()
     {
         if (rankingPanel)
-        {
-            rankingPanel.SetActive(true);   // 패널 열기
-        }
+            rankingPanel.SetActive(true);
     }
 
+    // ==== BGM 헬퍼 ====
+    void PlayTitleBgm()
+    {
+        if (AudioManager.I && titleBgmClip)
+            AudioManager.I.PlayBGM(titleBgmClip, loop: true);
+    }
 
-
+    void PlayInGameBgm()
+    {
+        if (AudioManager.I && inGameBgmClip)
+            AudioManager.I.PlayBGM(inGameBgmClip, loop: true);
+    }
 }
+
 

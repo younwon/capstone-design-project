@@ -6,14 +6,21 @@ public class ColorActivationManager : MonoBehaviour
 {
     public static ColorActivationManager I { get; private set; }
 
-    [Serializable] public class ColorToggle { public string name; public bool isActive; public Color color; }
+    [Serializable]
+    public class ColorToggle
+    {
+        public string name;
+        public bool isActive;
+        public Color color;
+    }
 
     [Header("Initial")]
     [SerializeField] private BlockColor initialActive = BlockColor.Green;
 
     [Header("Key Order (Q/W/E/R)")]
     [SerializeField]
-    private BlockColor[] keyOrder = new[] {
+    private BlockColor[] keyOrder = new[]
+    {
         BlockColor.Green, BlockColor.Yellow, BlockColor.Blue, BlockColor.Orange
     };
 
@@ -37,10 +44,18 @@ public class ColorActivationManager : MonoBehaviour
 
     void Awake()
     {
-        if (I && I != this) { Destroy(gameObject); return; }
+        if (I && I != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         I = this;
     }
-    void OnDestroy() { if (I == this) I = null; }
+
+    void OnDestroy()
+    {
+        if (I == this) I = null;
+    }
 
     void Start()
     {
@@ -60,21 +75,28 @@ public class ColorActivationManager : MonoBehaviour
     public void SetActiveByIndex(int index)
     {
         if (keyOrder == null || index < 0 || index >= keyOrder.Length) return;
+
         var target = keyOrder[index];
         bool isSame = target.Equals(ActiveColor);
         bool shouldPlay = playOnSameColor || !isSame;
+
         SetActiveColor(target, force: playOnSameColor && isSame, playSfx: shouldPlay);
     }
 
     public void SetActiveColor(BlockColor color, bool force = false, bool playSfx = true)
     {
         bool changed = !color.Equals(ActiveColor);
-        if (!force && !changed) { TryPlayActivateSfx(); return; }
+        if (!force && !changed)
+        {
+            TryPlayActivateSfx();
+            return;
+        }
 
         ActiveColor = color;
         SyncColorTogglesArray(color);
 
-        if (logEvents) Debug.Log($"[ColorActivation] Active = {ActiveColor}");
+        if (logEvents)
+            Debug.Log($"[ColorActivation] Active = {ActiveColor}");
 
         OnColorChanged?.Invoke(ActiveColor);
         if (playSfx) TryPlayActivateSfx();
@@ -84,6 +106,7 @@ public class ColorActivationManager : MonoBehaviour
     {
         if (sfxActivate == null || AudioManager.I == null) return;
         if (_sfxTimer < minSfxInterval) return;
+
         _sfxTimer = 0f;
         AudioManager.I.PlaySFX(sfxActivate);
     }
@@ -91,16 +114,21 @@ public class ColorActivationManager : MonoBehaviour
     void SyncColorTogglesArray(BlockColor active)
     {
         if (colors == null || colors.Length == 0) return;
+
         for (int i = 0; i < colors.Length; i++)
         {
-            if (i < keyOrder.Length) colors[i].isActive = (keyOrder[i] == active);
+            if (i < keyOrder.Length)
+                colors[i].isActive = (keyOrder[i] == active);
         }
     }
 
     [ContextMenu("Test Play SFX")]
     void TestPlaySfx()
     {
-        if (AudioManager.I && sfxActivate) AudioManager.I.PlaySFX(sfxActivate);
-        else Debug.LogWarning("[ColorActivation] AudioManager 또는 sfxActivate가 비었습니다.");
+        if (AudioManager.I && sfxActivate)
+            AudioManager.I.PlaySFX(sfxActivate);
+        else
+            Debug.LogWarning("[ColorActivation] AudioManager 또는 sfxActivate가 비었습니다.");
     }
 }
+
