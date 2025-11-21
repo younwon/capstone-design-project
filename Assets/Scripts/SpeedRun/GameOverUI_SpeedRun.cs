@@ -28,8 +28,14 @@ public class GameOverUI_SpeedRun : MonoBehaviour
     [SerializeField] Image flashOverlay;
 
     [Header("SFX (optional)")]
+    [Tooltip("숫자 카운트 중 '틱' 사운드")]
     [SerializeField] AudioClip sfxTick;
+    [Tooltip("카운트 완료 확정 사운드")]
     [SerializeField] AudioClip sfxConfirm;
+
+    [Tooltip("★ 신기록일 때만 재생되는 효과음 (NEW RECORD SFX)")]
+    [SerializeField] AudioClip sfxBestRecord;
+
     [SerializeField, Tooltip("틱 사운드 간격(초). 0이면 매 프레임 시도")]
     float tickInterval = 0.05f;
 
@@ -98,7 +104,14 @@ public class GameOverUI_SpeedRun : MonoBehaviour
                 cachedThisTime = ScoreSystem.FormatMMSS(Mathf.Max(0f, speed.ThisRunTime));
 
             cachedBestTime = "--:--";
-            cachedIsNew = speed.IsNewRecord;
+
+            // ===== [핵심 수정] 신기록 판정 안정화 =====
+            bool computedNew = cachedThisRun > cachedBest;      // 계산 기반
+            bool flagNew = speed.IsNewRecord;                   // 시스템 플래그 기반
+
+            // best가 이미 갱신되어 thisRun==best가 된 케이스도 플래그로 인정
+            // 플래그가 스테일 true인데 thisRun<best면 무시
+            cachedIsNew = computedNew || (flagNew && cachedThisRun >= cachedBest);
         }
         else
         {
@@ -163,9 +176,13 @@ public class GameOverUI_SpeedRun : MonoBehaviour
             int value = Mathf.RoundToInt(Mathf.Lerp(from, to, k));
             target.text = $"{value} m";
 
+            // Tick 사운드
             if (AudioManager.I && sfxTick)
             {
-                if (tickInterval <= 0f) AudioManager.I.PlaySFX(sfxTick);
+                if (tickInterval <= 0f)
+                {
+                    AudioManager.I.PlaySFX(sfxTick);
+                }
                 else
                 {
                     tickTimer += Time.unscaledDeltaTime;
@@ -181,7 +198,10 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         }
 
         target.text = $"{to} m";
-        if (AudioManager.I && sfxConfirm) AudioManager.I.PlaySFX(sfxConfirm);
+
+        // 완료음
+        if (AudioManager.I && sfxConfirm)
+            AudioManager.I.PlaySFX(sfxConfirm);
     }
 
     void Show()
@@ -196,6 +216,9 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         if (!cg) return;
         cg.alpha = 1f; cg.interactable = true; cg.blocksRaycasts = true;
         IsShown = true;
+
+        if (GlobalButtonSFX.I) GlobalButtonSFX.I.Refresh();
+
     }
 
     void HideImmediate()
@@ -212,7 +235,6 @@ public class GameOverUI_SpeedRun : MonoBehaviour
     }
 
     // ===== 버튼 =====
-    // 재시작: 바로 인게임(타이틀 스킵)
     public void OnClickRestart()
     {
         Time.timeScale = 1f;
@@ -224,14 +246,13 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         SceneManager.LoadScene(s.buildIndex);
     }
 
-    // 홈: 같은 씬을 처음부터 완전 리셋(타이틀부터)
     public void OnClickHome()
     {
         Time.timeScale = 1f;
         InputLocked = false;
         suppressRestoreHUD = true;
 
-        StartGate.SkipTitleOnce = false; // 타이틀부터
+        StartGate.SkipTitleOnce = false;
         var sc = SceneManager.GetActiveScene();
         SceneManager.LoadScene(sc.buildIndex);
     }
@@ -241,6 +262,10 @@ public class GameOverUI_SpeedRun : MonoBehaviour
     {
         if (flashOverlay) StartCoroutine(FlashWhite(flashOverlay, flashMaxAlpha, flashDuration));
         if (newRecordBanner) StartCoroutine(BlinkBanner(newRecordBanner));
+
+        // ★ 신기록일 때만 sfxBestRecord 재생
+        if (AudioManager.I && sfxBestRecord)
+            AudioManager.I.PlaySFX(sfxBestRecord);
     }
 
     IEnumerator FlashWhite(Image img, float maxAlpha, float dur)
@@ -249,9 +274,21 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         float up = dur * 0.4f, down = dur - up;
 
         float t = 0f;
-        while (t < up) { t += Time.unscaledDeltaTime; c.a = Mathf.Lerp(0f, maxAlpha, t / up); img.color = c; yield return null; }
+        while (t < up)
+        {
+            t += Time.unscaledDeltaTime;
+            c.a = Mathf.Lerp(0f, maxAlpha, t / up);
+            img.color = c;
+            yield return null;
+        }
         t = 0f;
-        while (t < down) { t += Time.unscaledDeltaTime; c.a = Mathf.Lerp(maxAlpha, 0f, t / down); img.color = c; yield return null; }
+        while (t < down)
+        {
+            t += Time.unscaledDeltaTime;
+            c.a = Mathf.Lerp(maxAlpha, 0f, t / down);
+            img.color = c;
+            yield return null;
+        }
         c.a = 0f; img.color = c;
     }
 
@@ -270,4 +307,6 @@ public class GameOverUI_SpeedRun : MonoBehaviour
         banner.gameObject.SetActive(false);
     }
 }
+
+
 

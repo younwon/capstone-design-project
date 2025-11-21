@@ -1,12 +1,10 @@
-﻿﻿using System.Collections;
+﻿using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
-
-
 
 public class GameOverUI : MonoBehaviour
 {
@@ -36,7 +34,7 @@ public class GameOverUI : MonoBehaviour
     // ==== [SFX extra] Tick / Confirm ====
     [SerializeField] AudioClip sfxTick;               // 숫자 카운트 중 '틱' 사운드
     [SerializeField] AudioClip sfxConfirm;            // 카운트 완료 확정 사운드
-    [SerializeField, Tooltip("틱 사운드 간격(초). 0이면 매 프레임마다 재생 시도")]
+    [SerializeField, Tooltip("틱 사운드 간격(초). 0이면 값이 바뀔 때마다 재생")]
     float tickInterval = 0.05f;
 
     [Header("Flash Tuning")]
@@ -80,6 +78,13 @@ public class GameOverUI : MonoBehaviour
 
         if (newRecordBanner) newRecordBanner.gameObject.SetActive(false);
         if (flashOverlay) flashOverlay.color = new Color(1, 1, 1, 0); // 알파 0 시작
+
+        // === 여기 추가: sfxSource를 AudioManager의 SFX 그룹에 자동 연결 ===
+        // (AudioManager에 public AudioMixerGroup SfxGroup { get; } 이 있다고 가정)
+        if (sfxSource && AudioManager.I && AudioManager.I.SfxGroup)
+        {
+            sfxSource.outputAudioMixerGroup = AudioManager.I.SfxGroup;
+        }
     }
 
     void OnDestroy()
@@ -163,37 +168,40 @@ public class GameOverUI : MonoBehaviour
     {
         if (!target) yield break;
 
+        // duration이 0이거나 거의 0이면 바로 값 찍고 완료음만
         if (duration <= 0.0001f)
         {
             target.text = $"{to} m";
-            // 완료음 (즉시)
             if (AudioManager.I && sfxConfirm) AudioManager.I.PlaySFX(sfxConfirm);
             yield break;
         }
 
         float t = 0f;
-        float tickTimer = 0f; // 틱 사운드 간격 제어
+        float tickTimer = 0f;
+
+        // 이전에 찍힌 값 (처음에는 from - 1로 해서 첫 프레임에 무조건 갱신)
+        int lastValue = from - 1;
 
         while (t < duration)
         {
             t += Time.unscaledDeltaTime;  // 정지 상태에서도 진행
+            tickTimer += Time.unscaledDeltaTime;
+
             float k = Mathf.Clamp01(t / duration);
             if (easeOut) k = EaseOutQuad(k);
 
             int value = Mathf.RoundToInt(Mathf.Lerp(from, to, k));
-            target.text = $"{value} m";
 
-            // Tick 사운드
-            if (AudioManager.I && sfxTick)
+            // 값이 바뀐 "딱 그 순간"에만 텍스트 갱신 + Tick 사운드
+            if (value != lastValue)
             {
-                if (tickInterval <= 0f)
+                lastValue = value;
+                target.text = $"{value} m";
+
+                // Tick 사운드 (값이 바뀔 때만, 그리고 tickInterval 간격도 고려)
+                if (AudioManager.I && sfxTick)
                 {
-                    AudioManager.I.PlaySFX(sfxTick);
-                }
-                else
-                {
-                    tickTimer += Time.unscaledDeltaTime;
-                    if (tickTimer >= tickInterval)
+                    if (tickInterval <= 0f || tickTimer >= tickInterval)
                     {
                         tickTimer = 0f;
                         AudioManager.I.PlaySFX(sfxTick);
@@ -203,6 +211,8 @@ public class GameOverUI : MonoBehaviour
 
             yield return null;
         }
+
+        // 마지막으로 목표 값 보정
         target.text = $"{to} m";
 
         // 완료음
@@ -211,6 +221,7 @@ public class GameOverUI : MonoBehaviour
     }
 
     public static System.Action OnShown;
+
     // ====== 표시/숨김 ======
     void Show()
     {
@@ -234,7 +245,7 @@ public class GameOverUI : MonoBehaviour
 
         IsShown = true;
 
-        cg.alpha = 1f; cg.interactable = true; cg.blocksRaycasts = true; IsShown = true;
+        if (GlobalButtonSFX.I) GlobalButtonSFX.I.Refresh();
 
         OnShown?.Invoke();
     }
@@ -273,10 +284,9 @@ public class GameOverUI : MonoBehaviour
         var s = SceneManager.GetActiveScene();
         SceneManager.LoadScene(s.buildIndex);
 
-        // 만약 FadeRouter를 반드시 쓰고 싶다면 ↑ 두 줄 대신 아래 한 줄:
+        // FadeRouter 사용 시:
         // FadeRouter.Load(s.name, skipTitleOnce: true);
     }
-
 
     public void OnClickHome()
     {
@@ -308,7 +318,7 @@ public class GameOverUI : MonoBehaviour
         if (flashOverlay) StartCoroutine(FlashWhite(flashOverlay, flashMaxAlpha, flashDuration));
         if (newRecordBanner) StartCoroutine(BannerBlinkLoop(newRecordBanner));   // UI 열려있는 동안 계속 깜빡
 
-        // (옵션) 사운드
+        // (옵션) 사운드 - 이건 GameOverUI 전용 sfxSource로 재생
         if (sfxSource && sfxNewRecord)
             sfxSource.PlayOneShot(sfxNewRecord);
     }

@@ -47,19 +47,23 @@ public class LavaProximityFX : MonoBehaviour
         if (!lava) lava = FindObjectOfType<LavaRiser>();
         if (!shaker && Camera.main) shaker = Camera.main.GetComponent<CameraShaker>();
 
-        // 이미 붙어있는 AudioSource가 있으면 재사용
         if (!TryGetComponent(out lavaSource))
             lavaSource = gameObject.AddComponent<AudioSource>();
 
         lavaSource.loop = true;
-        lavaSource.playOnAwake = false;     // 시작부터 재생 금지
+        lavaSource.playOnAwake = false;
         lavaSource.spatialBlend = 0f;
         lavaSource.volume = 0f;
         lavaSource.pitch = minPitch;
         lavaSource.clip = lavaBoilLoop;
 
+        // ★ 추가 — SFC 설정 반영되도록 믹서 그룹 적용
+        if (AudioManager.I && AudioManager.I.SfxGroup)
+            lavaSource.outputAudioMixerGroup = AudioManager.I.SfxGroup;
+
         if (audibleExit > audibleEnter) audibleExit = audibleEnter * 0.5f;
     }
+
 
     void OnEnable()
     {
@@ -104,6 +108,11 @@ public class LavaProximityFX : MonoBehaviour
             if (!lavaSource.isPlaying) lavaSource.Play();
 
             float targetVol = tAudio;
+
+            float mix = 1f;
+            if (AudioManager.I)
+                mix = Mathf.Clamp01(AudioManager.I.masterVolume * AudioManager.I.sfxVolume);
+
             float targetPitch = Mathf.Lerp(minPitch, maxPitch, tAudio);
             lavaSource.volume = Mathf.Lerp(lavaSource.volume, targetVol, Time.deltaTime * audioLerpSpeed);
             lavaSource.pitch = Mathf.Lerp(lavaSource.pitch, targetPitch, Time.deltaTime * audioLerpSpeed);

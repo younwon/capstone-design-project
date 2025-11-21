@@ -107,7 +107,6 @@ public class PlayerDeath_SpeedRun : MonoBehaviour
         if (AudioManager.I)
         {
             if (deathClip) AudioManager.I.PlaySFX(deathClip);
-            if (fadeAllOnDeath) AudioManager.I.FadeOutAll(fadeTimeOnDeath);
         }
 
         OnPlayerDied?.Invoke(transform);

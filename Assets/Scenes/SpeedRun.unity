@@ -5950,7 +5950,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialActive: 0
   keyOrder: 00000000010000000200000003000000
-  sfxActivate: {fileID: 0}
+  sfxActivate: {fileID: 8300000, guid: a042765d350952a44b24bf590d982159, type: 3}
   playOnSameColor: 0
   minSfxInterval: 0.08
   colors: []
@@ -10018,6 +10018,7 @@ GameObject:
   - component: {fileID: 848146844}
   - component: {fileID: 848146842}
   - component: {fileID: 848146847}
+  - component: {fileID: 848146848}
   m_Layer: 5
   m_Name: GameOverUI
   m_TagString: Untagged
@@ -10133,17 +10134,114 @@ MonoBehaviour:
   newBadge: {fileID: 0}
   newRecordBanner: {fileID: 1493924288}
   flashOverlay: {fileID: 1326313952}
-  sfxTick: {fileID: 0}
+  sfxTick: {fileID: 8300000, guid: d43aeca51003ac0498f5a5462bdf3f8c, type: 3}
   sfxConfirm: {fileID: 0}
+  sfxBestRecord: {fileID: 8300000, guid: 7226cad0579e5644ea9fb98da817404d, type: 3}
   tickInterval: 0.05
   flashMaxAlpha: 0.9
   flashDuration: 0.6
-  countThisDuration: 0.6
-  countBestDuration: 0.6
+  countThisDuration: 1.2
+  countBestDuration: 1.2
   easeOut: 1
   uiDelay: 0.8
   hideWhenShown:
   - {fileID: 1402137829}
+--- !u!82 &848146848
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 848146840}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &872397738
 GameObject:
   m_ObjectHideFlags: 0
@@ -10624,6 +10722,18 @@ PrefabInstance:
       propertyPath: rankingPanel
       value: 
       objectReference: {fileID: 1850007010}
+    - target: {fileID: 5634747926322096870, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
+      propertyPath: startGameSfx
+      value: 
+      objectReference: {fileID: 8300000, guid: b50fac4857e2d2044a7e6c58e47a07c6, type: 3}
+    - target: {fileID: 5634747926322096870, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
+      propertyPath: titleBgmClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 10e7aa86798947b478ad39c06e762e6d, type: 3}
+    - target: {fileID: 5634747926322096870, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
+      propertyPath: inGameBgmClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 88467174950fe5643b91ea05fb14fa61, type: 3}
     - target: {fileID: 5634747926322096870, guid: daf42ed34f3d19a45a5ddab87ed2e42f, type: 3}
       propertyPath: segmentSpawner
       value: 
@@ -16818,7 +16928,7 @@ MonoBehaviour:
   coyoteTime: 0.1
   enableJumpBuffer: 1
   jumpBufferTime: 0.1
-  jumpClip: {fileID: 0}
+  jumpClip: {fileID: 8300000, guid: 108ed55a472a9324aafc00216cb38b8c, type: 3}
 --- !u!114 &1303449249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16852,7 +16962,7 @@ MonoBehaviour:
   bounceForce: 7
   gravityOnDeath: 2.2
   delayBeforeUI: 0.6
-  deathClip: {fileID: 0}
+  deathClip: {fileID: 8300000, guid: 9692205647c843b4384476c421a0bb02, type: 3}
   fadeAllOnDeath: 1
   fadeTimeOnDeath: 1.5
   cameraFollowComponent: {fileID: 0}
@@ -22314,6 +22424,7 @@ MonoBehaviour:
   popupUnsaved: {fileID: 532095790}
   btnPopupDiscard: {fileID: 2106595706}
   btnPopupSaveAndExit: {fileID: 463980023}
+  defaultSettingsClickSfx: {fileID: 8300000, guid: d43aeca51003ac0498f5a5462bdf3f8c, type: 3}
 --- !u!114 &1729686129
 MonoBehaviour:
   m_ObjectHideFlags: 0
