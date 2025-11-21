@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6700bf935db3364488f4a1d8491792e, type: 3}
   m_Name: Ac3
   m_EditorClassIdentifier: 
-  itemName: Test2
+  itemName: Glasses B
   itemDescription: REACH 150M
   itemCost: 0
-  itemIcon: {fileID: 0}
+  itemIcon: {fileID: 21300000, guid: c21058281d09f974fa6054e78575d235, type: 3}
   itemPrefab: {fileID: 0}
   playerAccessorySprite: {fileID: 0}
   specificAnimator: {fileID: 9100000, guid: 12791b85ceefe4b4687902be0f8363ff, type: 2}

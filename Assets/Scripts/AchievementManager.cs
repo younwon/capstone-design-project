@@ -140,8 +140,19 @@ public class AchievementManager : MonoBehaviour
         }
     }
 
-    // 업적 초기화 (디버그용)
-    [ContextMenu("모든 업적 초기화 (PlayerPrefs)")]
+    [ContextMenu("모든 업적 달성 (Debug)")]
+    public void UnlockAllAchievements()
+    {
+        foreach (string id in allAchievementIds)
+        {
+            // 이미 달성된 업적은 UnlockAchievement 내부에서 자동으로 걸러집니다.
+            UnlockAchievement(id);
+        }
+
+        Debug.Log("[AchievementManager] 치트: 모든 업적을 달성 처리했습니다.");
+    }
+// 업적 초기화 (디버그용)
+[ContextMenu("모든 업적 초기화 (PlayerPrefs)")]
     public void ClearAllAchievements()
     {
         foreach (string id in allAchievementIds)

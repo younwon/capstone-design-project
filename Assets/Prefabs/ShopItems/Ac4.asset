@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6700bf935db3364488f4a1d8491792e, type: 3}
   m_Name: Ac4
   m_EditorClassIdentifier: 
-  itemName: Test
+  itemName: UFO B
   itemDescription: REACH SPEEDRUN 50M
   itemCost: 0
   itemIcon: {fileID: 0}
   itemPrefab: {fileID: 0}
   playerAccessorySprite: {fileID: 0}
-  specificAnimator: {fileID: 9100000, guid: a6c48ae040917ce43b02dbd40844ad6b, type: 2}
+  specificAnimator: {fileID: 9100000, guid: 8e38e776acaa4874fa547be711709467, type: 2}
   requiredAchievementId: SPEEDRUN 50M

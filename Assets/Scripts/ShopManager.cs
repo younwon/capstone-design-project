@@ -27,7 +27,27 @@ public class ShopManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            // 저장된 장착 아이템 불러오기
             equippedHatName = PlayerPrefs.GetString("EquippedHatName", "");
+            // 상점 아이템 리스트에 아이템이 하나라도 있다면
+            if (shopItems.Count > 0)
+            {
+                // 첫 번째 아이템(0번)의 구매 기록을 확인하고, 없으면 구매 처리(1)합니다.
+                if (PlayerPrefs.GetInt(shopItems[0].itemName, 0) == 0)
+                {
+                    PlayerPrefs.SetInt(shopItems[0].itemName, 1);
+
+                    // (선택 사항) 만약 현재 장착 중인 아이템이 없다면, 기본 캐릭터를 장착시킵니다.
+                    if (string.IsNullOrEmpty(equippedHatName))
+                    {
+                        equippedHatName = shopItems[0].itemName;
+                        PlayerPrefs.SetString("EquippedHatName", equippedHatName);
+                    }
+
+                    PlayerPrefs.Save();
+                }
+            }
+
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             if (Camera.main != null)

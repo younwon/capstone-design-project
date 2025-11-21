@@ -48,7 +48,10 @@ public class LavaRiser : MonoBehaviour
     BoxCollider2D col;
     float startTime;
     readonly Dictionary<PlayerHP, float> lastHit = new();
-
+    void OnEnable()
+    {
+        lavaStarted = false;
+    }
     void Awake()
     {
         col = GetComponent<BoxCollider2D>();

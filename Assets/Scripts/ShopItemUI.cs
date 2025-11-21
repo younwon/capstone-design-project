@@ -33,6 +33,7 @@ public class ShopItemUI : MonoBehaviour
         if (itemData == null) return;
 
         // 1. 업적 달성 여부를 먼저 확인
+        bool hasAchievementCondition = !string.IsNullOrEmpty(itemData.requiredAchievementId);
         bool isUnlocked = AchievementManager.Instance.IsAchievementUnlocked(itemData.requiredAchievementId);
 
         if (!isUnlocked)
@@ -47,8 +48,22 @@ public class ShopItemUI : MonoBehaviour
         {
             //  업적 달성 시: 기존 구매/장착 로직 실행
             if (lockOverlay != null) lockOverlay.SetActive(false);
-            if (priceText) priceText.gameObject.SetActive(true);
-
+            if (hasAchievementCondition)
+            {
+                // 업적 아이템인데 해금되었다면 -> 공짜로 구매 처리 (보상 지급)
+                if (PlayerPrefs.GetInt(itemData.itemName, 0) == 0)
+                {
+                    PlayerPrefs.SetInt(itemData.itemName, 1);
+                    PlayerPrefs.Save();
+                }
+                // 가격 텍스트 숨김 (공짜니까)
+                if (priceText) priceText.gameObject.SetActive(false);
+            }
+            else
+            {
+                // 일반 아이템은 가격 표시
+                if (priceText) priceText.gameObject.SetActive(true);
+            }
             bool isPurchased = PlayerPrefs.GetInt(itemData.itemName, 0) == 1;
 
             if (isPurchased)
