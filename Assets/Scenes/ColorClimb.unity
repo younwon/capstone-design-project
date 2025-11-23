@@ -11148,6 +11148,7 @@ MonoBehaviour:
   coyoteTime: 0.1
   enableJumpBuffer: 1
   jumpBufferTime: 0.1
+  iceAcceleration: 1
   jumpClip: {fileID: 8300000, guid: 108ed55a472a9324aafc00216cb38b8c, type: 3}
 --- !u!1 &996299243
 GameObject:
@@ -14052,7 +14053,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1206761319
 MonoBehaviour:
   m_ObjectHideFlags: 0
