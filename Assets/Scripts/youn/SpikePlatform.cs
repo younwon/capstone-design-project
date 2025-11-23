@@ -19,9 +19,9 @@ public class SpikePlatform : MonoBehaviour
     [Tooltip("발판 활성화 후, 가시가 처음 올라오기까지의 딜레이")]
     public float initialDelay = 1.0f;
     [Tooltip("가시가 튀어나와 있는 시간")]
-    public float activeDuration = 1.0f;
+    public float activeDuration = 0.5f;
     [Tooltip("가시가 들어간 후, 다시 나오기까지의 대기 시간")]
-    public float inactiveDuration = 2.0f;
+    public float inactiveDuration = 3.0f;
 
     // [추가] 랜덤 시간차 설정
     [Header("랜덤 설정")]
