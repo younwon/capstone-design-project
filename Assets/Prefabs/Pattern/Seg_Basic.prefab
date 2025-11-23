@@ -61,7 +61,7 @@ MonoBehaviour:
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
-    allowSpring: 1
+    allowSpring: 0
   - lane: 5
     rowOffset: 3
     yFine: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
     yFine: 0
     colorGroup: 0
     paletteIndex: 0
-    allowSpring: 1
+    allowSpring: 0
   - lane: 3
     rowOffset: 6
     yFine: 0

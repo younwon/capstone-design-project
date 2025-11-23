@@ -349,9 +349,11 @@ MonoBehaviour:
   spikeChildObject: {fileID: 4817542702064799445}
   riseAmount: 0.2
   moveSpeed: 10
-  initialDelay: 1
-  activeDuration: 1
+  initialDelay: 0.5
+  activeDuration: 0.5
   inactiveDuration: 3
+  randomizeStartTime: 1
+  randomDelayMax: 3
 --- !u!1 &2577219218702382852
 GameObject:
   m_ObjectHideFlags: 0

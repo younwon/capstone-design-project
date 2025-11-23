@@ -569,9 +569,11 @@ MonoBehaviour:
   spikeChildObject: {fileID: 3913562834126434899}
   riseAmount: 0.2
   moveSpeed: 5
-  initialDelay: 1
-  activeDuration: 1
+  initialDelay: 0.5
+  activeDuration: 0.5
   inactiveDuration: 3
+  randomizeStartTime: 1
+  randomDelayMax: 3
 --- !u!114 &5677089339078957792
 MonoBehaviour:
   m_ObjectHideFlags: 0

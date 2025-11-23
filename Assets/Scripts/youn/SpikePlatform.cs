@@ -23,6 +23,13 @@ public class SpikePlatform : MonoBehaviour
     [Tooltip("가시가 들어간 후, 다시 나오기까지의 대기 시간")]
     public float inactiveDuration = 2.0f;
 
+    // [추가] 랜덤 시간차 설정
+    [Header("랜덤 설정")]
+    [Tooltip("체크하면 가시가 나오는 시작 타이밍을 랜덤하게 섞습니다.")]
+    public bool randomizeStartTime = true;
+    [Tooltip("추가될 랜덤 시간의 최대값 (초). 예: 1.0이면 0~1.0초 사이의 시간이 딜레이에 추가됨")]
+    public float randomDelayMax = 1.0f;
+
     private Collider2D parentCollider;
     private bool lastState;
     private Vector3 hiddenPos;
@@ -79,14 +86,22 @@ public class SpikePlatform : MonoBehaviour
         spikeChildObject.transform.localPosition = hiddenPos;
         SetSpikeColliders(false);
 
-        yield return new WaitForSeconds(initialDelay);
+        // [수정] 랜덤 딜레이 적용 로직
+        // 기본 딜레이(0.5초) + 랜덤 시간(0~1.0초) = 총 0.5 ~ 1.5초 후에 첫 가시 등장
+        float startDelay = initialDelay;
+        if (randomizeStartTime)
+        {
+            startDelay += Random.Range(0f, randomDelayMax);
+        }
+
+        yield return new WaitForSeconds(startDelay);
 
         while (true)
         {
-            yield return StartCoroutine(AnimateSpike(true)); // 올라갈 때 Collider 켜기
-            yield return new WaitForSeconds(activeDuration);
-            yield return StartCoroutine(AnimateSpike(false)); // 내려갈 때 Collider 끄기
-            yield return new WaitForSeconds(inactiveDuration);
+            yield return StartCoroutine(AnimateSpike(true)); // 올라오기 (위험) Cllider 활성화
+            yield return new WaitForSeconds(activeDuration); // 유지 (1.5초)
+            yield return StartCoroutine(AnimateSpike(false)); // 내려가기 (안전) Collider 비활성화
+            yield return new WaitForSeconds(inactiveDuration); // 대기 (1.2초)
         }
     }
 
