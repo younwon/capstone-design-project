@@ -21831,6 +21831,8 @@ MonoBehaviour:
     - prefab: {fileID: 6801262862034987100, guid: 795ab65891192674d9e7ad155953aa45, type: 3}
       weight: 0
     - prefab: {fileID: 1712285562941211670, guid: 66f7e32ee21fd6243932611668675dda, type: 3}
+      weight: 0
+    - prefab: {fileID: 7490943929031702081, guid: 226a453f64a146442b6a132cc4d08ecd, type: 3}
       weight: 100
   - minMeters: 3
     entries:
