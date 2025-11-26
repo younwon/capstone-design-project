@@ -9789,9 +9789,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fc50543c6f2bf44298293d1af07ed1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetAnimator: {fileID: 0}
-  hatImageRenderer: {fileID: 0}
-  defaultAnimator: {fileID: 0}
+  targetAnimator: {fileID: 1275461884}
+  hatImageRenderer: {fileID: 958221179}
+  playerDeath: {fileID: 0}
+  defaultAnimator: {fileID: 9100000, guid: 3ded6fd60ff499e4d849fb46a410e1ce, type: 2}
 --- !u!1001 &836385863
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16928,6 +16929,7 @@ MonoBehaviour:
   coyoteTime: 0.1
   enableJumpBuffer: 1
   jumpBufferTime: 0.1
+  iceAcceleration: 10
   jumpClip: {fileID: 8300000, guid: 108ed55a472a9324aafc00216cb38b8c, type: 3}
 --- !u!114 &1303449249
 MonoBehaviour:

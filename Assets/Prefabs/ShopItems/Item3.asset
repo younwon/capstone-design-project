@@ -17,6 +17,6 @@ MonoBehaviour:
   itemCost: 15
   itemIcon: {fileID: 21300000, guid: 56d4f9e031a24e5409b139875ef76d1f, type: 3}
   itemPrefab: {fileID: 0}
-  playerAccessorySprite: {fileID: 0}
-  specificAnimator: {fileID: 9100000, guid: 4a4ffc8e21ba2c14f82e183b770dba02, type: 2}
+  playerAccessorySprite: {fileID: 21300000, guid: 551a095757b566243a1cf2c25b296fd9, type: 3}
+  specificAnimator: {fileID: 9100000, guid: 3ded6fd60ff499e4d849fb46a410e1ce, type: 2}
   requiredAchievementId: 

@@ -6,6 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerDeath : MonoBehaviour
 {
+    private Sprite defaultDeadSprite;
+
     [Header("Visual")]
     public Sprite deadSprite;
 
@@ -41,6 +43,18 @@ public class PlayerDeath : MonoBehaviour
         {
             GetComponent<PlayerController2D>(),
         };
+        defaultDeadSprite = deadSprite;
+    }
+    public void SetDeathSprite(Sprite newSprite)
+    {
+        if (newSprite != null)
+        {
+            deadSprite = newSprite;
+        }
+    }
+    public void ResetDeathSprite()
+    {
+        deadSprite = defaultDeadSprite;
     }
 
     public void Die(string reason = "Lava")

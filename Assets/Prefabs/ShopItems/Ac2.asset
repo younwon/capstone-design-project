@@ -18,5 +18,6 @@ MonoBehaviour:
   itemIcon: {fileID: 21300000, guid: 543788d8986e85f4797d15895e02f136, type: 3}
   itemPrefab: {fileID: 0}
   playerAccessorySprite: {fileID: 0}
+  playerDeathSprite: {fileID: 21300000, guid: 15c08f7d8cc73724baf999b21674a30b, type: 3}
   specificAnimator: {fileID: 9100000, guid: a6c48ae040917ce43b02dbd40844ad6b, type: 2}
   requiredAchievementId: REACH 100M

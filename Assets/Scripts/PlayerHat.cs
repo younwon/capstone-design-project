@@ -22,6 +22,7 @@ public class PlayerHat : MonoBehaviour
     // 2. 모자가 표시될 위치
     public SpriteRenderer hatImageRenderer;
 
+    public PlayerDeath playerDeath;
     [Header("기본 설정")]
     // 아이템 해제 시 돌아갈 기본 애니메이터 (Project 창에서 드래그)
     public RuntimeAnimatorController defaultAnimator;
@@ -41,10 +42,19 @@ public class PlayerHat : MonoBehaviour
         {
             defaultAnimator = targetAnimator.runtimeAnimatorController;
         }
+        if (playerDeath == null)
+        {
+            playerDeath = GetComponentInParent<PlayerDeath>(); // 보통 같은 오브젝트나 부모에 있음
+        }
     }
-
+    private void OnEnable()
+    {
+        // 잠시 대기 후 장착 시도 (씬 로드 타이밍 이슈 방지)
+        Invoke(nameof(ForceEquip), 0.1f);
+    }
     private void Start()
     {
+        ForceEquip();
         // 1. 저장된 모자 이름 확인
         string savedHatName = PlayerPrefs.GetString("EquippedHatName", "");
 
@@ -58,7 +68,32 @@ public class PlayerHat : MonoBehaviour
             }
         }
     }
+    private void ForceEquip()
+    {
+        string hatToWear = "";
 
+        // 1. ShopManager가 살아있다면 거기서 현재 장착 이름을 가져옴 (가장 정확)
+        if (ShopManager.Instance != null && !string.IsNullOrEmpty(ShopManager.Instance.equippedHatName))
+        {
+            hatToWear = ShopManager.Instance.equippedHatName;
+        }
+        // 2. 없다면 저장된 데이터(PlayerPrefs)에서 가져옴
+        else
+        {
+            hatToWear = PlayerPrefs.GetString("EquippedHatName", "");
+        }
+
+        // 3. 이름이 있다면 장착 시도
+        if (!string.IsNullOrEmpty(hatToWear) && ShopManager.Instance != null)
+        {
+            ShopItemData hatData = ShopManager.Instance.FindHatDataByName(hatToWear);
+            if (hatData != null)
+            {
+                EquipHat(hatData);
+                Debug.Log($"[PlayerHat] {hatToWear} 장착 성공 (씬: {gameObject.scene.name})");
+            }
+        }
+    }
     // ★ 장착 함수
     public void EquipHat(ShopItemData itemData)
     {
@@ -78,6 +113,19 @@ public class PlayerHat : MonoBehaviour
             hatImageRenderer.sprite = itemData.playerAccessorySprite;
             hatImageRenderer.gameObject.SetActive(true);
         }
+        if (playerDeath != null)
+        {
+            // 아이템 데이터에 사망 스프라이트가 있으면 교체, 없으면 기본값 유지
+            if (itemData.playerDeathSprite != null)
+            {
+                playerDeath.SetDeathSprite(itemData.playerDeathSprite);
+            }
+            else
+            {
+                // 아이템은 꼈지만 전용 사망 이미지가 없다면 기본 사망 이미지 사용
+                playerDeath.ResetDeathSprite();
+            }
+        }
     }
 
     // ★ 해제 함수
@@ -88,11 +136,14 @@ public class PlayerHat : MonoBehaviour
         {
             targetAnimator.runtimeAnimatorController = defaultAnimator;
         }
-
         // 2. 모자 숨기기
         if (hatImageRenderer != null)
         {
             hatImageRenderer.gameObject.SetActive(false);
+        }
+        if (playerDeath != null)
+        {
+            playerDeath.ResetDeathSprite();
         }
     }
 

@@ -11,7 +11,7 @@ public class ShopItemData : ScriptableObject
 
     [Header("Player Accessory")]
     public Sprite playerAccessorySprite; // 플레이어에게 씌울 모자 스프라이트
-
+    public Sprite playerDeathSprite;
     public RuntimeAnimatorController specificAnimator;
 
     [Header("업적 조건")]
