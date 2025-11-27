@@ -11558,10 +11558,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allAchievementIds:
+  - REACH 25M
   - REACH 50M
-  - REACH 100M
-  - REACH 150M
-  - SPEEDRUN 50M
+  - REACH 75M
+  - SPEEDRUN 25M
   allShopItems:
   - {fileID: 11400000, guid: 04dc573230e8a8240b8454e59f4843f6, type: 2}
   - {fileID: 11400000, guid: a01b54aeb45bf3d4cbd2196433f73e12, type: 2}

@@ -29,9 +29,9 @@ public class ScoreSystem : MonoBehaviour
     bool _runEnded;           // 게임오버 후 타이머 정지
     public bool IsNewRecord { get; private set; } // 이번 게임에서 신기록 여부
 
+    private bool hasUnlocked25M = false;
     private bool hasUnlocked50M = false;
-    private bool hasUnlocked100M = false;
-    private bool hasUnlocked150M = false;
+    private bool hasUnlocked75M = false;
     void Awake()
     {
         I = this;
@@ -65,22 +65,22 @@ public class ScoreSystem : MonoBehaviour
         if (cur > SessionMaxScore)
             SessionMaxScore = cur;
 
+        if (cur >= 25 && !hasUnlocked50M)
+        {
+            hasUnlocked50M = true;
+            AchievementManager.Instance.UnlockAchievement("REACH 25M");
+            Debug.Log("업적 달성");
+        }
         if (cur >= 50 && !hasUnlocked50M)
         {
             hasUnlocked50M = true;
             AchievementManager.Instance.UnlockAchievement("REACH 50M");
             Debug.Log("업적 달성");
         }
-        if (cur >= 100 && !hasUnlocked100M)
+        if (cur >= 75 && !hasUnlocked75M)
         {
-            hasUnlocked100M = true;
-            AchievementManager.Instance.UnlockAchievement("REACH 100M");
-            Debug.Log("업적 달성");
-        }
-        if (cur >= 150 && !hasUnlocked150M)
-        {
-            hasUnlocked150M = true;
-            AchievementManager.Instance.UnlockAchievement("REACH 150M");
+            hasUnlocked75M = true;
+            AchievementManager.Instance.UnlockAchievement("REACH 75M");
             Debug.Log("업적 달성");
         }
     }

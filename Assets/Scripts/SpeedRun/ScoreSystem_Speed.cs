@@ -23,7 +23,7 @@ public class ScoreSystem_Speed : MonoBehaviour
 
     public bool IsNewRecord { get; private set; }
 
-    private bool hasUnlocked50M = false;
+    private bool hasUnlocked25M = false;
 
     // 내부
     float _runTimer;
@@ -65,14 +65,14 @@ public class ScoreSystem_Speed : MonoBehaviour
         int cur = Mathf.FloorToInt(curMeters);
         if (cur != CurrentScore) CurrentScore = cur;
 
-        if (cur >= 50 && !hasUnlocked50M)
+        if (cur >= 25 && !hasUnlocked25M)
         {
-            hasUnlocked50M = true;
-            AchievementManager.Instance.UnlockAchievement("SPEEDRUN 50M");
+            hasUnlocked25M = true;
+            AchievementManager.Instance.UnlockAchievement("SPEEDRUN 25M");
             Debug.Log("업적 달성");
         }
 
-        // ✅ 추가됨 : F9 키로 최고기록 초기화
+        // F9 키로 최고기록 초기화
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (Input.GetKeyDown(KeyCode.F9))
         {
