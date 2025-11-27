@@ -48,7 +48,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ea8e87659cdd3bb4ab8b30072316fc60, type: 2}
   - {fileID: 11400000, guid: cd24bced6c9db8d4783154468c2188b2, type: 2}
   coinPrefab: {fileID: 5047054674502725462, guid: 8741e4de972358046bac090a85214423, type: 3}
-  coinSpawnChance: 5
+  coinSpawnChance: 25
   coinYOffset: 1
   points:
   - lane: 1

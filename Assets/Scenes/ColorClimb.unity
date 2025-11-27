@@ -16226,8 +16226,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cam: {fileID: 0}
-  skyToSpaceStart: 45
-  skyToSpaceEnd: 59
+  skyToSpaceStart: 15
+  skyToSpaceEnd: 30
   skyRenderers: []
   spaceRenderers:
   - {fileID: 1371954434}
@@ -21829,27 +21829,27 @@ MonoBehaviour:
     entries:
     - prefab: {fileID: 6801262862034987100, guid: 795ab65891192674d9e7ad155953aa45, type: 3}
       weight: 100
-  - minMeters: 3
+  - minMeters: 5
     entries:
     - prefab: {fileID: 6801262862034987100, guid: cec08b83cb8cedd4f8b15106dea7417f, type: 3}
       weight: 100
-  - minMeters: 12
+  - minMeters: 10
     entries:
     - prefab: {fileID: 1834732117358071206, guid: 62c83312531dcba42af2b62d107de0a5, type: 3}
       weight: 100
-  - minMeters: 18
+  - minMeters: 15
     entries:
     - prefab: {fileID: 6801262862034987100, guid: 7b97250b80669744caff5bdde1634598, type: 3}
       weight: 100
-  - minMeters: 25
+  - minMeters: 17
     entries:
     - prefab: {fileID: 6801262862034987100, guid: bf0e85b05d65b5641aa9c20e3ea895d9, type: 3}
       weight: 100
-  - minMeters: 40
+  - minMeters: 22
     entries:
     - prefab: {fileID: 6801262862034987100, guid: 79c794f1718f82f4aaf83f2b99a4c3a0, type: 3}
       weight: 100
-  - minMeters: 40
+  - minMeters: 27
     entries:
     - prefab: {fileID: 6801262862034987100, guid: dc1fff9b497fb174c92479ef63cc8193, type: 3}
       weight: 100
@@ -23189,7 +23189,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f51e9719a6f54234eb96b6758555281e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 557f22a5260e0fe48a94622afd6a5b01, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

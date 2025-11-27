@@ -47,7 +47,7 @@ MonoBehaviour:
   palettes:
   - {fileID: 11400000, guid: 498337d2b08f11b43bc998e5ec21c000, type: 2}
   coinPrefab: {fileID: 5047054674502725462, guid: 8741e4de972358046bac090a85214423, type: 3}
-  coinSpawnChance: 5
+  coinSpawnChance: 25
   coinYOffset: 1
   points:
   - lane: 1
