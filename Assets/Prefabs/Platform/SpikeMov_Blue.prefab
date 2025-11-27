@@ -589,4 +589,4 @@ MonoBehaviour:
   moveHorizontally: 1
   minPosition: -3
   maxPosition: 3
-  speed: 0.5
+  speed: 0.2

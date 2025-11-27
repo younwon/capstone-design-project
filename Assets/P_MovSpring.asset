@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: add2e6ea65bb9b04b80f90628df37851, type: 3}
   m_Name: P_MovSpring
   m_EditorClassIdentifier: 
-  prefab: {fileID: 1290142311832948150, guid: 1c669288baad39644b3f1a1187881887, type: 3}
+  prefab: {fileID: 2370063468438881860, guid: c968e50385a630c49b773a678c92509f, type: 3}

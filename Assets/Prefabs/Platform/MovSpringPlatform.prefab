@@ -147,7 +147,7 @@ MonoBehaviour:
   moveHorizontally: 1
   minPosition: -3
   maxPosition: 3
-  speed: 0.5
+  speed: 0.2
 --- !u!1 &1359439794812747689
 GameObject:
   m_ObjectHideFlags: 0

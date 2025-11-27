@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: add2e6ea65bb9b04b80f90628df37851, type: 3}
   m_Name: Palette_Spring
   m_EditorClassIdentifier: 
-  prefab: {fileID: 6526020939397362911, guid: 7a9e493cfab522541b740bc9032270d9, type: 3}
+  prefab: {fileID: 2370063468438881860, guid: 3dae02e21ab440e4da69db6fb0524a1a, type: 3}

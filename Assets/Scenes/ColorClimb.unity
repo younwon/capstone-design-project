@@ -16226,8 +16226,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cam: {fileID: 0}
-  skyToSpaceStart: 15
-  skyToSpaceEnd: 30
+  skyToSpaceStart: 20
+  skyToSpaceEnd: 40
   skyRenderers: []
   spaceRenderers:
   - {fileID: 1371954434}
@@ -21845,11 +21845,11 @@ MonoBehaviour:
     entries:
     - prefab: {fileID: 6801262862034987100, guid: bf0e85b05d65b5641aa9c20e3ea895d9, type: 3}
       weight: 100
-  - minMeters: 22
+  - minMeters: 25
     entries:
     - prefab: {fileID: 6801262862034987100, guid: 79c794f1718f82f4aaf83f2b99a4c3a0, type: 3}
       weight: 100
-  - minMeters: 27
+  - minMeters: 35
     entries:
     - prefab: {fileID: 6801262862034987100, guid: dc1fff9b497fb174c92479ef63cc8193, type: 3}
       weight: 100
