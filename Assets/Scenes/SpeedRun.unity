@@ -14197,7 +14197,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1189500664
 RectTransform:
   m_ObjectHideFlags: 0
@@ -22436,7 +22436,7 @@ MonoBehaviour:
   txtSfxValue: {fileID: 1607377363}
   bgSfxValueBox: {fileID: 1925067410}
   toggleAllSound: {fileID: 2033468451}
-  toggleFullscreen: {fileID: 0}
+  toggleFullscreen: {fileID: 63022156}
   btnCancel: {fileID: 1529550340}
   btnSave: {fileID: 1295875539}
   normalSprite: {fileID: 21300000, guid: c9fce2ecc6cf8074aa3f35851fd054e0, type: 3}
