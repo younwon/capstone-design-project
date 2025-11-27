@@ -184,7 +184,7 @@ MonoBehaviour:
   resetVelocityBeforeKnockback: 1
   controlDisableDuration: 0.5
   zeroHorizontalOnLock: 1
-  sfxHit: {fileID: 0}
+  sfxHit: {fileID: 8300000, guid: 112cf9c40c874924fa5985f32fbcca32, type: 3}
   usePlayerTag: 0
 --- !u!1 &2545289306486072521
 GameObject:
@@ -354,6 +354,9 @@ MonoBehaviour:
   inactiveDuration: 3
   randomizeStartTime: 1
   randomDelayMax: 3
+  spikeUpSfx: {fileID: 8300000, guid: 301584207cf80cb40b40a48fbe7dd9a5, type: 3}
+  spikeDownSfx: {fileID: 8300000, guid: 1afec21f6ca1cf5439ea2081219c9b64, type: 3}
+  sfxMaxDistance: 15
 --- !u!1 &2577219218702382852
 GameObject:
   m_ObjectHideFlags: 0
@@ -538,7 +541,7 @@ MonoBehaviour:
   resetVelocityBeforeKnockback: 1
   controlDisableDuration: 0.5
   zeroHorizontalOnLock: 1
-  sfxHit: {fileID: 0}
+  sfxHit: {fileID: 8300000, guid: 112cf9c40c874924fa5985f32fbcca32, type: 3}
   usePlayerTag: 0
 --- !u!1 &4817542702064799445
 GameObject:

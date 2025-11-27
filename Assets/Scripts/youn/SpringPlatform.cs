@@ -14,6 +14,9 @@ public class SpringPlatform : MonoBehaviour
     public Sprite pressedSprite;        // 눌렸을 때 스프라이트
     public float pressDuration = 0.1f;  // 눌린 스프라이트 유지 시간
 
+    [Header("SFX")]                     // ★ 추가: 스프링 효과음
+    public AudioClip springSfx;         // 밟아서 튕겨질 때 재생할 소리
+
     private SpriteRenderer spriteRenderer;
     private bool canJump = true;        // 점프 쿨다운 확인용
 
@@ -37,6 +40,12 @@ public class SpringPlatform : MonoBehaviour
 
             // 위쪽으로 순간적인 힘을 가합니다.
             otherRb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+
+            // ★ 여기서 한 번만 띠용 SFX 재생 (쿨다운 걸리는 타이밍)
+            if (springSfx && AudioManager.I != null)
+            {
+                AudioManager.I.PlaySFX(springSfx);
+            }
 
             // 점프 쿨다운 및 시각 효과 코루틴을 시작합니다.
             StartCoroutine(JumpCooldown());
@@ -74,3 +83,4 @@ public class SpringPlatform : MonoBehaviour
         canJump = true;
     }
 }
+

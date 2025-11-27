@@ -30,6 +30,14 @@ public class SpikePlatform : MonoBehaviour
     [Tooltip("추가될 랜덤 시간의 최대값 (초). 예: 1.0이면 0~1.0초 사이의 시간이 딜레이에 추가됨")]
     public float randomDelayMax = 1.0f;
 
+    [Header("SFX")]
+    [Tooltip("가시가 올라올 때 재생할 소리")]
+    public AudioClip spikeUpSfx;
+    [Tooltip("가시가 내려갈 때 재생할 소리")]
+    public AudioClip spikeDownSfx;
+    [Tooltip("카메라와 이 거리 이내에 있을 때만 SFX를 재생합니다.")]
+    public float sfxMaxDistance = 15f;
+
     private Collider2D parentCollider;
     private bool lastState;
     private Vector3 hiddenPos;
@@ -37,9 +45,17 @@ public class SpikePlatform : MonoBehaviour
     private Coroutine runningCycle = null;
     private Collider2D[] spikeColliders;
 
+    // 카메라 위치 캐시 (SFX 거리 제한용)
+    private Transform camTransform;
+
     void Awake()
     {
         parentCollider = GetComponent<Collider2D>();
+
+        // 카메라 캐시
+        if (Camera.main != null)
+            camTransform = Camera.main.transform;
+
         if (spikeChildObject != null)
         {
             Vector3 initialPos = spikeChildObject.transform.localPosition;
@@ -48,18 +64,18 @@ public class SpikePlatform : MonoBehaviour
 
             spikeColliders = spikeChildObject.GetComponentsInChildren<Collider2D>();
 
-            // [수정] 게임 시작 시, 자식 오브젝트를 확실히 꺼진 상태(안 보이는 상태)로 초기화합니다.
+            // 게임 시작 시, 자식 오브젝트를 확실히 꺼진 상태(안 보이는 상태)로 초기화
             spikeChildObject.SetActive(false);
         }
         lastState = false;
     }
 
-    // [수정] 보여주셨던 초기 코드의 핵심 로직을 여기에 통합했습니다.
+    // 보여주셨던 초기 코드의 핵심 로직을 여기에 통합
     void Update()
     {
         bool isParentColliderActive = parentCollider.enabled;
 
-        // 부모 발판의 활성화/비활성화 상태가 변경될 때만 작동합니다.
+        // 부모 발판의 활성화/비활성화 상태가 변경될 때만 작동
         if (isParentColliderActive != lastState)
         {
             // 부모의 상태와 똑같이 자식 오브젝트 전체를 켜거나 끕니다.
@@ -68,7 +84,7 @@ public class SpikePlatform : MonoBehaviour
                 spikeChildObject.SetActive(isParentColliderActive);
             }
 
-            // 만약 '활성화'된 것이라면, 반복 애니메이션 사이클을 시작합니다.
+            // 활성화되면 반복 애니메이션 사이클 시작
             if (isParentColliderActive)
             {
                 // 안전을 위해 이전 코루틴을 멈추고 새로 시작
@@ -86,8 +102,7 @@ public class SpikePlatform : MonoBehaviour
         spikeChildObject.transform.localPosition = hiddenPos;
         SetSpikeColliders(false);
 
-        // [수정] 랜덤 딜레이 적용 로직
-        // 기본 딜레이(0.5초) + 랜덤 시간(0~1.0초) = 총 0.5 ~ 1.5초 후에 첫 가시 등장
+        // 랜덤 딜레이 적용
         float startDelay = initialDelay;
         if (randomizeStartTime)
         {
@@ -98,10 +113,13 @@ public class SpikePlatform : MonoBehaviour
 
         while (true)
         {
-            yield return StartCoroutine(AnimateSpike(true)); // 올라오기 (위험) Cllider 활성화
-            yield return new WaitForSeconds(activeDuration); // 유지 (1.5초)
-            yield return StartCoroutine(AnimateSpike(false)); // 내려가기 (안전) Collider 비활성화
-            yield return new WaitForSeconds(inactiveDuration); // 대기 (1.2초)
+            // 올라오기 (위험, 콜라이더 활성화)
+            yield return StartCoroutine(AnimateSpike(true));
+            yield return new WaitForSeconds(activeDuration);
+
+            // 내려가기 (안전, 콜라이더 비활성화)
+            yield return StartCoroutine(AnimateSpike(false));
+            yield return new WaitForSeconds(inactiveDuration);
         }
     }
 
@@ -109,8 +127,11 @@ public class SpikePlatform : MonoBehaviour
     {
         if (spikeChildObject == null) yield break;
 
-        // 애니메이션 시작/끝에 Collider만 제어합니다 (SetActive는 Update에서 담당)
+        // 애니메이션 시작/끝에 Collider만 제어
         SetSpikeColliders(show);
+
+        // ★ 여기서 SFX 한 번만 재생
+        PlaySpikeMoveSfx(show);
 
         Vector3 startPos = spikeChildObject.transform.localPosition;
         Vector3 endPos = show ? shownPos : hiddenPos;
@@ -136,5 +157,28 @@ public class SpikePlatform : MonoBehaviour
         {
             col.enabled = enabled;
         }
+    }
+
+    // === SFX 재생 로직 (올라갈 때/내려갈 때 한 번씩) ===
+    void PlaySpikeMoveSfx(bool goingUp)
+    {
+        if (AudioManager.I == null) return;
+
+        // 색이 비활성화된 상태면 소리 안 남
+        if (parentCollider != null && !parentCollider.enabled)
+            return;
+
+        // 카메라와 너무 멀면 소리 안 남 (화면 아래 멀리 있을 때)
+        if (camTransform != null)
+        {
+            float dy = Mathf.Abs(transform.position.y - camTransform.position.y);
+            if (dy > sfxMaxDistance) return;
+        }
+
+        AudioClip clip = goingUp ? spikeUpSfx : spikeDownSfx;
+        if (clip == null) return;
+
+        // 전역 SFX라서 AudioManager 통해 재생 → SFX 볼륨/설정창에 따라감
+        AudioManager.I.PlaySFX(clip);
     }
 }

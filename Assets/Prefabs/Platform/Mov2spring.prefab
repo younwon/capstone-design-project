@@ -304,6 +304,7 @@ MonoBehaviour:
   idleSprite: {fileID: 21300000, guid: ee18ffe6aa9e81c43894b99a44bdd976, type: 3}
   pressedSprite: {fileID: 21300000, guid: 4278bb8d6e3e8f7458651c2a7af9c54b, type: 3}
   pressDuration: 0.1
+  springSfx: {fileID: 8300000, guid: f32154d20a5ae524bb625f797320fc59, type: 3}
 --- !u!1 &7856688521296584849
 GameObject:
   m_ObjectHideFlags: 0
