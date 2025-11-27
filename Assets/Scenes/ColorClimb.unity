@@ -26693,6 +26693,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetAnimator: {fileID: 725336825}
   hatImageRenderer: {fileID: 960833490}
+  playerDeath: {fileID: 0}
   defaultAnimator: {fileID: 9100000, guid: 3ded6fd60ff499e4d849fb46a410e1ce, type: 2}
 --- !u!95 &2128685271
 Animator:
