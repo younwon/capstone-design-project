@@ -9770,7 +9770,7 @@ Transform:
   m_GameObject: {fileID: 833731700}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.8, y: -0.45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9791,7 +9791,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetAnimator: {fileID: 1275461884}
   hatImageRenderer: {fileID: 958221179}
-  playerDeath: {fileID: 0}
+  playerDeathColorClimb: {fileID: 0}
+  playerDeathSpeedRun: {fileID: 1303449250}
   defaultAnimator: {fileID: 9100000, guid: 3ded6fd60ff499e4d849fb46a410e1ce, type: 2}
 --- !u!1001 &836385863
 PrefabInstance:
@@ -15763,7 +15764,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -397, y: -860}
+  m_AnchoredPosition: {x: -380, y: -860}
   m_SizeDelta: {x: 300, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1274222810

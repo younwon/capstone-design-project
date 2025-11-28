@@ -71,7 +71,7 @@ public class ShopItemUI : MonoBehaviour
                 // 구매 완료 상태
                 purchaseButton.interactable = true;
                 bool isEquipped = ShopManager.Instance.equippedHatName == itemData.itemName;
-                buttonText.text = isEquipped ? "X" : "O";
+                buttonText.text = isEquipped ? "OFF" : "ON";
                 
                 purchaseButton.onClick.RemoveAllListeners();
                 purchaseButton.onClick.AddListener(EquipItem);

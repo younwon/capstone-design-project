@@ -6,7 +6,7 @@ public class PlayerDeath_SpeedRun : MonoBehaviour
 {
     [Header("Visual")]
     public Sprite deadSprite;
-
+    private Sprite defaultDeadSprite;
     [Header("Motion")]
     public float bounceForce = 7f;
     public float gravityOnDeath = 2.2f;
@@ -61,6 +61,7 @@ public class PlayerDeath_SpeedRun : MonoBehaviour
                 }
             }
         }
+        defaultDeadSprite = deadSprite;
     }
 
     // ▶ 씬이 리로드되면 이 컴포넌트도 다시 Enable됨.
@@ -70,6 +71,17 @@ public class PlayerDeath_SpeedRun : MonoBehaviour
         if (cameraFollowComponent) cameraFollowComponent.enabled = true;
         cameraFrozen = false;
         IsDead = false; // 안전 차원 초기화(원래 흐름 유지)
+    }
+    public void SetDeathSprite(Sprite newSprite)
+    {
+        if (newSprite != null)
+        {
+            deadSprite = newSprite;
+        }
+    }
+    public void ResetDeathSprite()
+    {
+        deadSprite = defaultDeadSprite;
     }
 
     public void Die(string reason = "TimeUp")
