@@ -282,7 +282,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 771699cdf6389de41966f3acddd6ab99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpForce: 17
+  jumpForce: 18
   jumpInterval: 0.5
   idleSprite: {fileID: 21300000, guid: ee18ffe6aa9e81c43894b99a44bdd976, type: 3}
   pressedSprite: {fileID: 21300000, guid: 4278bb8d6e3e8f7458651c2a7af9c54b, type: 3}

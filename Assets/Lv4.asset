@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
   m_Name: Lv4
   m_EditorClassIdentifier: 
-  prefabGreen: {fileID: 5584463607895429125, guid: 775f77d3bc868ea4494c81f61fce471b, type: 3}
-  prefabYellow: {fileID: 8967399620975440260, guid: 50e6692860f6fe24b9f219b9645f3805, type: 3}
-  prefabBlue: {fileID: 6988686293949726229, guid: 70d850f55f4795a468f602a77942fc78, type: 3}
-  prefabOrange: {fileID: 8408599352171378806, guid: 52104b6b1d067bf498b977e6ce74ddf1, type: 3}
+  prefabGreen: {fileID: 8537367036274477264, guid: 7e12bfa322c69df48a6ad68dfc233eca, type: 3}
+  prefabYellow: {fileID: 1677391443219384902, guid: e8f6efc11cb468c49b3915c63eb57786, type: 3}
+  prefabBlue: {fileID: 3920841340584245061, guid: 5fb7f48951ef5c04b8348ed0a8e27fba, type: 3}
+  prefabOrange: {fileID: 8873214129841776273, guid: 68912226cfcf6094cb88d757c80a3552, type: 3}
   spikeVersionPalette: {fileID: 0}
   spikeChance: 0
   springVersionAsset: {fileID: 0}
   springChance: 0
   movingVersionPalette: {fileID: 0}
   movingChance: 0
-  movingSpikeVersionPalette: {fileID: 0}
-  movingSpikeChance: 0
+  movingSpikeVersionPalette: {fileID: 11400000, guid: 60464077f01ae52469bb16f981c68d28, type: 2}
+  movingSpikeChance: 70
   movingSpringVersionAsset: {fileID: 11400000, guid: f0f16219a84a4844e947d3dcdd4e84a7, type: 2}
-  movingSpringChance: 5
+  movingSpringChance: 10
