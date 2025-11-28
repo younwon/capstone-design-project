@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7490943929031702081
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3919805296327133980}
+  - component: {fileID: 7643516665821619540}
+  m_Layer: 0
+  m_Name: Seg_Slide
+  m_TagString: Block
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3919805296327133980
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7490943929031702081}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.3786477, y: 1.4960409, z: -9.923569}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7643516665821619540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7490943929031702081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 077c42c32a0ea4d48bd399f6cafc8930, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  palettes:
+  - {fileID: 11400000, guid: a2d3ce77a80a0ff4283a415a24c620ba, type: 2}
+  coinPrefab: {fileID: 0}
+  coinSpawnChance: 25
+  coinYOffset: 1
+  points:
+  - lane: 2
+    rowOffset: 1
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+    allowSpring: 1
+  - lane: 4
+    rowOffset: 2
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+    allowSpring: 1
+  - lane: 6
+    rowOffset: 3
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+    allowSpring: 1
+  - lane: 7
+    rowOffset: 4
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+    allowSpring: 1
+  - lane: 4
+    rowOffset: 5
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+    allowSpring: 1
+  - lane: 2
+    rowOffset: 6
+    yFine: 0
+    colorGroup: 0
+    paletteIndex: 0
+    allowSpring: 1
+  sameLaneExtraGap: 4
+  laneOffset: 0
+  minRowGapForSameColor: 2
+  globalMaxStreak: 2
+  clearOldChildrenOnBuild: 1
+  halfCellBias: 0
+  useLogicLaneIndex: 1
+  logicHalfBias: 0
+  minWorldDXForSameColor: 0.6
+  minWorldDYForSameColor: 1.1
+  useProximityBan: 1
+  forceSameColorInGroup: 1
+  useColorGroupUnique: 0
+  groupOverridesOtherBans: 1
