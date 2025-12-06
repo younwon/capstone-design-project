@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
+  m_Name: slide
+  m_EditorClassIdentifier: 
+  prefabGreen: {fileID: 1202920142883047778, guid: 5142ff7f28cda2f4f8c144936e28b762, type: 3}
+  prefabYellow: {fileID: 3889274861943839789, guid: e5dcfb1513a069a439dc085fe26f7ab0, type: 3}
+  prefabBlue: {fileID: 7273688564768026414, guid: c18ba977879efbf478f94303c85d4abf, type: 3}
+  prefabOrange: {fileID: 330830214441166535, guid: 2d6293186059d1941a47f808246d4904, type: 3}
+  spikeVersionPalette: {fileID: 0}
+  spikeChance: 0
+  springVersionAsset: {fileID: 0}
+  springChance: 0
+  movingVersionPalette: {fileID: 0}
+  movingChance: 0
+  movingSpikeVersionPalette: {fileID: 0}
+  movingSpikeChance: 0
+  movingSpringVersionAsset: {fileID: 0}
+  movingSpringChance: 0

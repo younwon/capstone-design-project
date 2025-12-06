@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46a264c0d6d86004cbb64672596cd1e9, type: 3}
+  m_Name: Palette_Disappear
+  m_EditorClassIdentifier: 
+  prefabGreen: {fileID: 5174595908830637924, guid: 803471ce0df3f01408c74a8ec51b3ccf, type: 3}
+  prefabYellow: {fileID: 5174595908830637924, guid: 14ed0ddbdace3954aa48c132df5fe8fc, type: 3}
+  prefabBlue: {fileID: 5174595908830637924, guid: 087846f34c5d49b42ae2c55867212993, type: 3}
+  prefabOrange: {fileID: 5174595908830637924, guid: 84e7757473d9b7f4da25311984b1144f, type: 3}
+  spikeVersionPalette: {fileID: 0}
+  spikeChance: 0
+  springVersionAsset: {fileID: 0}
+  springChance: 0
+  movingVersionPalette: {fileID: 0}
+  movingChance: 0
+  movingSpikeVersionPalette: {fileID: 0}
+  movingSpikeChance: 0
+  movingSpringVersionAsset: {fileID: 0}
+  movingSpringChance: 0
